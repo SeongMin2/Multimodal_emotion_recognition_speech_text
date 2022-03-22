@@ -1,10 +1,5 @@
-import torch
-from torchtext import data
-from torchtext import datasets
+import pandas as pd
 
-TEXT = data.Field(pad_first=True, fix_length=500)
-LABEL = data.LabelField(dtype=torch.float)
-
-train_data, test_data = datasets.IMDB.splits(TEXT, LABEL)
-
-pass
+data = {'file':['Ses01F_impro01_F000','Ses01F_impro01_M000'],'text':['Excuse me.','Do you have your forms?']}
+df = pd.DataFrame(data)
+df.to_csv('./all_sessions.csv',sep=';')
