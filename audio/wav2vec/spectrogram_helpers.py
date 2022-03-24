@@ -14,7 +14,7 @@ class dotdict(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-def get_spec(file_name):
+def get_spec(speech):
 
     config = {}
     config["freq"]=16000
@@ -29,10 +29,10 @@ def get_spec(file_name):
     b, a = butter_highpass(30, config["freq"], order=5)
 
     # Read audio file
-    x, _ = sf.read(file_name)
+    # x, _ = sf.read(file_name)
     
     # Remove drifting noise
-    y = signal.filtfilt(b, a, x)
+    y = signal.filtfilt(b, a, speech)
 
     config = dotdict(config)
 
