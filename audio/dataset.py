@@ -42,7 +42,6 @@ class SpeechTextDataset(Dataset):
             logger.warning(f"{wav_path} is not Valid!!")
             return torch.zeros(1000, self.num_mels)
 
-
         feature = self.transforms(signal, self.sample_rate)  # 여기에 wav2vec feature 추출하도록
         '''
         feature -= feature.mean()
