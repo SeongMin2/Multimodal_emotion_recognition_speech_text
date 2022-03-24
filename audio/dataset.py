@@ -17,6 +17,7 @@ class SpeechTextDataset(Dataset):
                  dataset_path:str,
                  wav_paths: list,
                  transcripts: list,
+                 emotions: list,
                  tokenizer,
                  sos_token: int,
                  eos_token: int,
@@ -26,6 +27,7 @@ class SpeechTextDataset(Dataset):
         self.dataset_path = dataset_path
         self.wav_paths = wav_paths
         self.transcripts = transcripts
+        self.emotions = emotions
         self.tokenizer = tokenizer
         self.dataset_size = len(self.wav_paths)
         self.transforms = apply_wav2vec
@@ -72,6 +74,10 @@ class SpeechTextDataset(Dataset):
 
     def __getitem__(self, idx) -> dict:
         """ Provides paif of audio & transcript """
+
+        ## 여기서 emotion에 대해서 one hot encoder 형태로 바꿔줘야함 아직 안함
+        # emotion one hot으로 바꾸는 함수 만들어서 하면 될듯
+        
         wav_path = os.path.join(self.dataset_path, self.wav_paths[idx])
 
         feature = self._parse_wav(wav_path)
