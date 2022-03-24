@@ -6,6 +6,7 @@ import logging
 # from omegaconf import DictConfig
 from torch import Tensor
 from torch.utils.data import Dataset
+from wav2vec.extract_wav2vec2 import apply_wav2vec
 
 from audio.load import load_wav
 
@@ -27,6 +28,7 @@ class SpeechTextDataset(Dataset):
         self.transcripts = transcripts
         self.tokenizer = tokenizer
         self.dataset_size = len(self.wav_paths)
+        self.transforms = apply_wav2vec
         self.sos_token = sos_token
         self.eos_token = eos_token
         self.sample_rate = sample_rate
@@ -41,7 +43,7 @@ class SpeechTextDataset(Dataset):
             return torch.zeros(1000, self.num_mels)
 
 
-        feature = self.transforms(signal)  # 여기에 wav2vec feature 추출하도록
+        feature = self.transforms(signal, self.sample_rate)  # 여기에 wav2vec feature 추출하도록
         '''
         feature -= feature.mean()
         feature /= np.std(feature)
