@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class SpeechTextDataset(Dataset):
     def __init__(self,
-                 dataset_path:str,
+                 dataset_path: str,
                  wav_paths: list,
                  transcripts: list,
                  emotions: list,
