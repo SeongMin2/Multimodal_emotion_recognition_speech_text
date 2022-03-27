@@ -1,5 +1,5 @@
 # https://huggingface.co/facebook/wav2vec2-large-lv60
-from transformers import AutoProcessor, AutoModelForPreTraining
+from transformers import AutoProcessor, AutoModelForPreTraining # 여기서 왜 AutoProcessor 머가 문제야
 import librosa
 import torch
 

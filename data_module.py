@@ -90,7 +90,7 @@ def main():
     sess_list = [1]
     save_path = './extraction/'
 
-    wav_paths, transcripts, emotions = get_data(save_path,sess_list)
+    wav_paths, transcripts, emotions = get_data(save_path,sess_list) # list들이 return 됨
     pass
 
 if __name__ == '__main__':

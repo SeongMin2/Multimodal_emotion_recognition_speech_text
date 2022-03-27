@@ -6,7 +6,7 @@ import logging
 # from omegaconf import DictConfig
 from torch import Tensor
 from torch.utils.data import Dataset
-from wav2vec.extract_wav2vec2 import apply_wav2vec
+from .wav2vec.extract_wav2vec2 import apply_wav2vec
 
 from audio.load import load_wav
 

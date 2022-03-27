@@ -11,6 +11,7 @@ __pycache__/
 IEMOCAP_full_release/
 
 extraction/
+data/
 
 # Distribution / packaging
 .Python
