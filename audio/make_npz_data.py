@@ -3,9 +3,12 @@ import numpy as np
 from pathlib import Path
 
 from os.path import dirname, join, abspath
-sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-import audio.parser_helper as helper
+sys.path.insert(0, abspath(join(dirname(__file__), '..'))) # 상위 폴더 import 접근법
+import parser_helper as helper
 from audio.identity.resemblyzer import encode as encode
+
+from phoneme.gentle.get_data import get_content_list
+# get_content_list 밑에서 phone 추출에 사용하기
 
 NUM_UTTRS = 2
 
@@ -37,6 +40,12 @@ def get_data(config):
                                                        num_uttrs = NUM_UTTRS)
 
                 # resemblyzer 이용하여 encode 결과 return한 부분 까지
+                helper.logger("info", "[INFO] Extract speaker " +spk_id+ "speaker identity")
+
+                # phone info 추출
+
+
+
 
 
 

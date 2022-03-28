@@ -18,7 +18,6 @@ def get_config():
 
     return parser_config
 
-# 이런것도 있넿 활용성 좋은듯
 def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_terminal=True):
     """
         Write message to the log
