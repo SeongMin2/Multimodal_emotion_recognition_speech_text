@@ -12,10 +12,25 @@ from audio.load import load_wav
 
 logger = logging.getLogger(__name__)
 
+
+def get_emotion_class(label):
+    emotion_class = 0
+
+    if ((label == "Happy") or (label == "Excited")):
+        emotion_class = 2
+    elif (label == "Angry"):
+        emotion_class = 0
+    elif (label == "Neutral"):
+        emotion_class = 1
+    elif (label == "Sad"):
+        emotion_class = 3
+    return emotion_class
+
 class SpeechTextDataset(Dataset):
     def __init__(self,
                  dataset_path: str,
                  wav_paths: list,
+                 npz_file,
                  transcripts: list,
                  emotions: list,
                  tokenizer,
@@ -36,6 +51,26 @@ class SpeechTextDataset(Dataset):
         self.sample_rate = sample_rate
         self._load_wav = load_wav
 
+        metaname = os.path.join(self.data_dir, npz_file)
+        metadata = np.load(metaname, allow_pickle=True)
+        
+    
+        # 여기 받아오는것은 phone seq까지해야 코드를 짤 수 있을듯
+        #for k, element in enumerate(metadata,0):
+
+    def _get_emotion_class(self, label):
+        emotion_class = 0
+
+        if ((label == "Happy") or (label == "Excited")):
+            emotion_class = 2
+        elif (label == "Angry"):
+            emotion_class = 0
+        elif (label == "Neutral"):
+            emotion_class = 1
+        elif (label == "Sad"):
+            emotion_class = 3
+        return emotion_class
+
     def _parse_wav(self, wav_path: str) -> Tensor:
 
         signal = self._load_wav(wav_path, sample_rate=self.sample_rate)
@@ -45,6 +80,8 @@ class SpeechTextDataset(Dataset):
             return torch.zeros(1000, self.num_mels)
 
         feature = self.transforms(signal, self.sample_rate)  # 여기에 wav2vec feature 추출하도록
+
+        # normalization인데 선택적으로 할 수 있게 하는게 좋을듯 음...
         '''
         feature -= feature.mean()
         feature /= np.std(feature)
@@ -82,10 +119,12 @@ class SpeechTextDataset(Dataset):
 
         feature = self._parse_wav(wav_path)
         transcript = self._parse_transcript(self.transcripts[idx])
+        emotion_label = self._get_emotion_class(self.emotions[idx])
 
         return {
             'wav2vec_feature' : np.array(feature, dtype=np.float_),
-            'transcript' : np.array(transcript, dtype=np.int_)
+            'transcript' : np.array(transcript, dtype=np.int_),
+            'label' : emotion_label
         }
 
     def __len__(self):
