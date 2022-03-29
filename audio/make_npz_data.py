@@ -28,7 +28,9 @@ def get_data(config):
 
             if(True): # Whether specturm files exist
                 spk_id = session + "_" + gender
-
+                ############################################
+                #           get speaker identity           #
+                ############################################
                 helper.logger("info", f"[INFO] Proceesing speaker{spk_id}")
                 print("spk: ", spk_id)
                 _, _, wav_list = next(os.walk(os.path.join(session_dir,gender)))
@@ -79,6 +81,7 @@ def get_data(config):
                     sys.exit(1)
                 tmp_element.append(spk_id)
                 tmp_element.append(gender_class)
+                tmp_element.append(wav_name)
                 tmp_element.append(spk_embs)
 
                 utterances.append(tmp_element)
