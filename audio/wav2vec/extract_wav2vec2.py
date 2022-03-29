@@ -3,7 +3,8 @@ import torch
 import librosa
 import sys, os
 import numpy as np
-from .spectrogram_helpers import get_spec
+from spectrogram_helpers import get_spec
+# 이거 오류 없이 잘 됨 왜 줄 뜨는지 몰겠음
 
 MODEL_TYPE = "facebook/wav2vec2-large-lv60"
 
@@ -65,6 +66,8 @@ def apply_wav2vec(batch, sr:int):
 sr = 16000
 speech, _sr = librosa.load('../../IEMOCAP_full_release/Session1/sentences/wav/Ses01F_impro01/Ses01F_impro01_F000.wav', sr=sr)
 feature = apply_wav2vec(speech,sr)
+# feature의 shape는 (25,98,1024) 잘 나옴
+print('hi')
 pass
 '''
 

@@ -7,6 +7,7 @@ from torchtext import data, datasets
 import random
 import numpy as np
 
+'''
 a = [['hello','a'],['bye','b']]
 np.savez('test.npz',a)
 
@@ -15,6 +16,7 @@ a_load = np.load('test.npz')
 print(a_load.files)
 
 a_load.close()
+'''
 
 '''
 SEED = 5

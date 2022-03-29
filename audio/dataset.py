@@ -12,20 +12,6 @@ from audio.load import load_wav
 
 logger = logging.getLogger(__name__)
 
-
-def get_emotion_class(label):
-    emotion_class = 0
-
-    if ((label == "Happy") or (label == "Excited")):
-        emotion_class = 2
-    elif (label == "Angry"):
-        emotion_class = 0
-    elif (label == "Neutral"):
-        emotion_class = 1
-    elif (label == "Sad"):
-        emotion_class = 3
-    return emotion_class
-
 class SpeechTextDataset(Dataset):
     def __init__(self,
                  dataset_path: str,

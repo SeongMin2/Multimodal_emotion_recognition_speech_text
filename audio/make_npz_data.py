@@ -42,6 +42,7 @@ def get_data(config):
                                                        wav_list = wav_list,
                                                        idx_uttrs = wav_idx,
                                                        num_uttrs = NUM_UTTRS)
+                # spk_embs의 shape는 (256,) 맞음
 
                 # resemblyzer 이용하여 encode 결과 return한 부분 까지
                 helper.logger("info", "[INFO] Extract speaker " +spk_id+ "speaker identity")
@@ -81,7 +82,7 @@ def get_data(config):
                     sys.exit(1)
                 tmp_element.append(spk_id)
                 tmp_element.append(gender_class)
-                tmp_element.append(wav_name)
+                #tmp_element.append(wav_name) 이거 phoneme 확인해보고
                 tmp_element.append(spk_embs)
 
                 utterances.append(tmp_element)
