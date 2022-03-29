@@ -2,17 +2,29 @@ import argparse
 import logging
 from datetime import datetime
 from termcolor import colored
+import os
+import numpy as np
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")
 LOG_PATH = date_time + ".log"
 
+def save_data(speakers, config):
+    """ Save npz data file """
+    logger('info','[INFO] Speakers length: ' + str(len(speakers)))
+
+    np.savez(config.npz_dir+'/' +config.mode+'.npz', feature=speakers)
+# 일단 이렇게 해놓고 나중에 수정
+
 def get_config():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--mode", type=str, default="train", help="train or test mode" )
     parser.add_argument("--spec_dir", type=str, default="./spectrum", help="Path to spectrum files")
     parser.add_argument("--ph_dict_dir", type=str, default="../phoneme/phone_dict.csv",help="path to phone dictionary file")
     parser.add_argument("--wav_dir", type=str, default="../data/speech", help="Path to wave files")
+    parser.add_argument("--npz_dir", type=str, default="../data", help="Path to npz file")
+
 
     parser_config = parser.parse_args()
 

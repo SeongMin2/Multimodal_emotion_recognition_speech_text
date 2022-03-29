@@ -96,8 +96,8 @@ def spect_transform(config, target_dir):
 def main():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--speech_dir", type=str, help="directory to the speech wave files")
-    parser.add_argument("--spmel_dir", type=str, help="directory of the spmel files")
+    parser.add_argument("--speech_dir", type=str, default='../data/speech',help="directory to the speech wave files")
+    parser.add_argument("--spmel_dir", type=str, default='spectrum', help="directory of the spmel files")
     parser.add_argument("--freq", type=int, default=16000, help="type of encoder architecture")
     parser.add_argument("--fft_len", type=int, default=400, help="size of a fft window")
     parser.add_argument("--hop_len", type=int, default=320, help="hop length used to compute the fft")

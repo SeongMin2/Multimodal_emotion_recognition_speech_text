@@ -5,7 +5,18 @@ import torch.nn.functional as F
 import torchtext
 from torchtext import data, datasets
 import random
+import numpy as np
 
+a = [['hello','a'],['bye','b']]
+np.savez('test.npz',a)
+
+a_load = np.load('test.npz')
+
+print(a_load.files)
+
+a_load.close()
+
+'''
 SEED = 5
 random.seed(SEED)
 torch.manual_seed(SEED)
@@ -79,7 +90,7 @@ def train(model, optimizer, train_iter):
 best_val_loss = None
 for e in range(1, EPOCHS+1):
     train(model, optimizer, train_iter)
-
+'''
 
 # wav2vec text
 '''
