@@ -43,6 +43,7 @@ def get_data(config):
                                                        idx_uttrs = wav_idx,
                                                        num_uttrs = NUM_UTTRS)
                 # spk_embs의 shape는 (256,) 맞음
+                # 그리고 model forward 하는 부분에서 96만큼 expand 시킴
 
                 # resemblyzer 이용하여 encode 결과 return한 부분 까지
                 helper.logger("info", "[INFO] Extract speaker " +spk_id+ "speaker identity")
