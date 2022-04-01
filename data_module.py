@@ -5,7 +5,7 @@ import pandas as pd
 PWD_PATH = './'
 SAVE_PATH = './extraction/'
 
-SAVE_TO_CSV = False
+SAVE_TO_CSV = True
 
 info_line = re.compile(r'\[.+\]\n', re.IGNORECASE)
 
@@ -63,7 +63,7 @@ def extract_data(save_path, sess_list) -> pd.DataFrame: # 이게 리턴 주석 �
         df_iemocap = pd.merge(left=df_text, right=df_emoeval, how="inner", on="wav_file")
 
         if(SAVE_TO_CSV):
-            df_iemocap.to_csv(save_path + 'df_v2_iemocap_sess{}.csv'.format(sess), index=False)
+            df_iemocap.to_csv(save_path + 'Session{}.csv'.format(sess), index=False)
 
         df = pd.concat([df, df_iemocap])
 
