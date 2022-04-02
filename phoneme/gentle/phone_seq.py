@@ -134,7 +134,7 @@ def get_txt_file(config, speaker_dir, file_name):
     return config.txt_dir + '/' + speaker_dir + '/' + file_name[:-4] + '.txt'
 
 def get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_name):
-    """ Return the phones and their durations read from the json file """
+    """ Return the phones and their durations read from the json file, plus txt string """
 
     phone_dict = config.phone_dict
     frame_len = config.frame_len
@@ -207,7 +207,7 @@ def get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_n
             phones_and_durations.append([token_id, float(token_duration)]) # append token at the end
             appended_duration += float(token_duration)
 
-    return phones_and_durations, True
+    return phones_and_durations, txt, True
 
 def get_phone_seq(json_file, config, spec_frames, speaker_dir, file_name):
     """ Returns the phone sequence according to the mode from the json file """
@@ -215,9 +215,9 @@ def get_phone_seq(json_file, config, spec_frames, speaker_dir, file_name):
     phone_dict = config.phone_dict
     frame_len = config.frame_len
 
-    # get the phones and durations from the json file
-    phones_and_durations, success = get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_name)
-    # 여기서 txt도 return 받고 그리고 이 함수 자체에서도 return에 txt 넣어서 넘겨주게 하셈
+    # get the phones and durations, text from the json file
+    phones_and_durations, txt, success = get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_name)
+    # phones_and_durations는 [[0,0.5],[32,0.01],...] 이런식으로 phone에 대한 token과 duration time이 set로 저장됨
 
     if not success:
         return [], [], False

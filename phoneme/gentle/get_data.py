@@ -61,7 +61,7 @@ def get_content_list(file_list, speaker_dir, config):
                 success_cases += 1
             else:
                 unsuccess_cases += 1
-        else:
+        else: # 일단은 이런 경우는 없긴 함
             # The speech corresponds to a "silent" speech get the transcript file
             txt_f = config.txt_dir + '/' + speaker_dir + '/' + file_name[:-4] + '.txt'
             txt_f_pt = Path(txt_f)

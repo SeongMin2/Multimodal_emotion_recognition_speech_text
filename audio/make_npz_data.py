@@ -77,22 +77,6 @@ def get_data(config):
                 else:
                     helper.logger("warning", "[WARNING] The speaker does not have any phone sequence")
 
-                tmp_element = list()
-
-                if (gender == "Female"):
-                    gender_class=0
-                elif (gender == "Male"):
-                    gender_class = 1
-                else:
-                    print("Error. Undefined gender " + str(gender))
-                    sys.exit(1)
-                tmp_element.append(spk_id)
-                tmp_element.append(gender_class)
-                #tmp_element.append(wav_name) 이거 phoneme 확인해보고
-                tmp_element.append(spk_embs)
-
-                utterances.append(tmp_element)
-
     helper.save_data(utterances,config)  # make_data_helper.py에 있는 함수로 id, speaker identify, phone 정보 여기서 통째로 정리하네
     '''
     helper.logger("info", "[INFO] Total number of successful spec transformations: " + str(success_cases))
