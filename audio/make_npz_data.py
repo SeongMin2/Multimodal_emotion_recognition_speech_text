@@ -5,7 +5,8 @@ from pathlib import Path
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..'))) # 상위 폴더 import 접근법
 import parser_helper as helper
-from audio.identity.resemblyzer import encode as encode
+# 이거 역시 문제 없이 잘 됨
+from audio.identity.resemblyzer import encode
 
 from phoneme.gentle.get_data import get_content_list
 # get_content_list 밑에서 phone 추출에 사용하기
@@ -48,12 +49,16 @@ def get_data(config):
                 # resemblyzer 이용하여 encode 결과 return한 부분 까지
                 helper.logger("info", "[INFO] Extract speaker " +spk_id+ "speaker identity")
 
-                '''
+
                 # phone info 추출
                 content_list = []
                 content_list, success_cases, unsuccess_cases = get_content_list(file_list=wav_list,
                                                                                 speaker_dir=session + "/" + gender,
                                                                                 config=config)
+                # get_content_list는 make_data_helper.py 안에 있고 이 get_content_list안에 phone_seq.py안에 있는 get_phone_seq라는 함수를 통해서
+                # phone 정보 추출해서 리턴 되것지
+                # content_list
+
                 if (len(content_list) > 0):
                     for element in content_list:
                         tmp_element = element.copy()
@@ -71,7 +76,7 @@ def get_data(config):
                         # helper.logger("info", "[INFO] Utterances length: " + str(len(utterances)))
                 else:
                     helper.logger("warning", "[WARNING] The speaker does not have any phone sequence")
-                '''
+
                 tmp_element = list()
 
                 if (gender == "Female"):

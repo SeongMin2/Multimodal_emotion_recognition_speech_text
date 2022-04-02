@@ -37,7 +37,7 @@ def get_content_list(file_list, speaker_dir, config):
         phone_seq_file_path = config.phone_dir + '/' + speaker_dir + '/' + json_file_name
         pathlib_phone_path = Path(phone_seq_file_path)
 
-        spec = np.load(str(config.root_dir) + '/' + speaker_dir + '/' + file_name) # load spectrogram
+        spec = np.load(str(config.spec_dir) + '/' + speaker_dir + '/' + file_name) # load spectrogram
 
         if pathlib_phone_path.exists():
             # The speech has phonetic content
