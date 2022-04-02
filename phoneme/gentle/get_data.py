@@ -48,6 +48,9 @@ def get_content_list(file_list, speaker_dir, config):
                                                                           file_name=file_name)
             # 여기에 있구나 get_phone_seq을 통해 phone 정보 추출
             # 여기서는 spectrum의 정보가 사전에 필요한것 같음
+            
+            # 날것의 txt 위에서 뽑아 오셈 그래야 밑에서 사용하게 
+            # 밑에서 txt_file 사용하는데 나는 안사용할거임
 
             if success:
                 assert main_phones.shape[0] == spec.shape[0]
@@ -65,7 +68,8 @@ def get_content_list(file_list, speaker_dir, config):
             if txt_f_pt.exists():
                 # if the file only has unknown tokens (no phone information)
                 if is_file_unk_token(txt_f):
-                    phones_and_durations, main_phones = ph.get_silent_phone_seq(config=config,
+                    phones_and_durations, main_phones = ph.get_silent_phone_seq(# txt= , 여기에 txt날것 넣어야 함
+                                                                                config=config,
                                                                                 spec_frames=spec.shape[0],
                                                                                 speaker_dir=speaker_dir,
                                                                                 file_name=file_name)

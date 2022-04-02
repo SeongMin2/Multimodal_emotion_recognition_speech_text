@@ -76,18 +76,23 @@ def remove_punctuation(word):
 
     return new_word
 
-def get_token_id(txt_file, post_word, is_eof, phone_dict):
+def get_token_id(txt, post_word, is_eof, phone_dict):
     """ Return the token id (token or silence)
         that exist before post_word.
     """
     if(len(post_word) > 0):
         post_word = remove_punctuation(post_word)
-    txt_f_pt = Path(txt_file)
-    if txt_f_pt.exists():
+    #txt_f_pt = Path(txt_file)
+    #if txt_f_pt.exists():
+    if True:
+        line = txt.lower()
+        line = remove_punctuation(line)
+        '''
         with open(txt_file, "r") as txt_p:
             line = txt_p.readline()
             line = line.lower()
             line = remove_punctuation(line)
+        '''
 
         if is_eof:
             # check if the line ends with a token
@@ -140,7 +145,8 @@ def get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_n
     json_data = read_json(json_file=json_file)
 
     # get corresponding text file path
-    txt_file = get_txt_file(config, speaker_dir, file_name)
+    # txt_file = get_txt_file(config, speaker_dir, file_name)
+    txt = json_data['transcript']
 
     # check if there are words in the json file
     if not ("words" in json_data):
@@ -170,7 +176,7 @@ def get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_n
                     if is_prev_word_unk:
                         token_id = 1 # unknown word id
                     else:
-                        token_id = get_token_id(txt_file, word["word"].lower(), False, phone_dict)
+                        token_id = get_token_id(txt, word["word"].lower(), False, phone_dict)
                     phones_and_durations.append([token_id, word_start-accum_dur]) # append token
                     appended_duration += (word_start-accum_dur)
             
@@ -197,7 +203,7 @@ def get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_n
             if is_prev_word_unk:
                 token_id = 1 # unknown word id
             else:
-                token_id = get_token_id(txt_file, [], True, phone_dict)
+                token_id = get_token_id(txt, [], True, phone_dict)
             phones_and_durations.append([token_id, float(token_duration)]) # append token at the end
             appended_duration += float(token_duration)
 
@@ -211,6 +217,7 @@ def get_phone_seq(json_file, config, spec_frames, speaker_dir, file_name):
 
     # get the phones and durations from the json file
     phones_and_durations, success = get_phone_info_from_json(json_file, config, spec_frames, speaker_dir, file_name)
+    # 여기서 txt도 return 받고 그리고 이 함수 자체에서도 return에 txt 넣어서 넘겨주게 하셈
 
     if not success:
         return [], [], False
@@ -307,7 +314,7 @@ def get_phone_seq(json_file, config, spec_frames, speaker_dir, file_name):
 
     return np.array(phones_and_durations), np.array(main_phones), success
 
-def get_silent_phone_seq(config, spec_frames, speaker_dir, file_name):
+def get_silent_phone_seq(txt, config, spec_frames, speaker_dir, file_name):
     """ Return a silent phone sequence. """
 
     frame_len = config.frame_len
@@ -315,12 +322,15 @@ def get_silent_phone_seq(config, spec_frames, speaker_dir, file_name):
 
     spec_duration = float(spec_frames * frame_len) # spectrogram duration in seconds
 
-    txt_file = get_txt_file(config, speaker_dir, file_name)
-    txt_f_pt = Path(txt_file)
+    #txt_file = get_txt_file(config, speaker_dir, file_name)
+    #txt_f_pt = Path(txt_file)
     # if the file exists
-    if txt_f_pt.exists():
-        with open(txt_file, "r") as txt_p:
-            line = txt_p.readline()
+    
+    if True: # 나는 txt_file 안쓰고 그냥 txt바로 뽑을 거라서 일단 txt 다 있을거니까 통과시킴
+    # if txt_f_pt.exists():
+        #with open(txt_file, "r") as txt_p:
+        #    line = txt_p.readline()
+        line = txt
         if(len(line) > 0):
             line = line.replace(" ", "")
             line = line.replace("\n","")
