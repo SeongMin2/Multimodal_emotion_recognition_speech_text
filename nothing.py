@@ -9,7 +9,7 @@ import numpy as np
 from pathlib import Path
 
 
-a = np.load("./data/train.npz", allow_pickle=True)
+a = np.load("./full_data/train.npz", allow_pickle=True)
 print(a)
 pass
 

@@ -39,10 +39,10 @@ def get_data(config):
                 wav_idx = np.random.choice(len(wav_list),size=NUM_UTTRS, replace=False)
                 helper.logger("info","[INFO] idx_uttrs: " + str(wav_idx))
                 spk_embs = encode.get_speaker_embeddings(dir_name = config.wav_dir,
-                                                       speaker = session + "/" + gender,
-                                                       wav_list = wav_list,
-                                                       idx_uttrs = wav_idx,
-                                                       num_uttrs = NUM_UTTRS)
+                                                         speaker = session + "/" + gender,
+                                                         wav_list = wav_list,
+                                                         idx_uttrs = wav_idx,
+                                                         num_uttrs = NUM_UTTRS)
                 # spk_embs의 shape는 (256,) 맞음
                 # 그리고 model forward 하는 부분에서 96만큼 expand 시킴
 

@@ -4,8 +4,22 @@ from pathlib import Path
 import phoneme.gentle.phone_seq as ph
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import parser_helper as helper
+import glob
+import pandas as pd
 # 여기서 emotion class 추출 안할거임
 # 그리고 그거 수정해라 그 txt dir 추출하는게 아니라 그냥 text data 전달해서 할거임
+
+def get_label(config, file_name, session):
+    file_name = file_name[:-4]
+    tables = glob.glob(config.table_dir + "/" + "*.csv")
+    table_name = [file for file in tables if session in file]
+    table_path = table_name[0]
+    df = pd.read_csv(table_path)
+
+    label = df[df['wav_file'] == file_name]['emotion'].values[0]
+
+    return label
+
 
 def is_file_unk_token(txt_f):
     """ Identify if the txt file is only an unknown token. """
@@ -29,10 +43,13 @@ def get_content_list(file_list, speaker_dir, config):
     content_list = []
     unsuccess_cases = 0
     success_cases = 0
+    session = speaker_dir.split("/")[0]
 
     # for all files of a given speaker
     for file_name in sorted(file_list):
         print("Processing ", file_name)
+        emotion = get_label(config, file_name, session)
+
         json_file_name = file_name[:-4] + '.json'   # 애초에 이 파일을 사용한다는것은 기존에 미리 extract_phonemes로 추출해서 저장된 상태에서 실행되어져야 함
         phone_seq_file_path = config.phone_dir + '/' + speaker_dir + '/' + json_file_name
         pathlib_phone_path = Path(phone_seq_file_path)
@@ -56,7 +73,7 @@ def get_content_list(file_list, speaker_dir, config):
                 assert main_phones.shape[0] == spec.shape[0]
                 utt_file = os.path.join(speaker_dir ,file_name)
                 word_seq, word_intervals = ph.get_word_seq_and_intervals(json_file=phone_seq_file_path)
-                utt_content = [str(utt_file), phones_and_durations, main_phones, word_seq, word_intervals] # save spmel file name and phone sequence
+                utt_content = [str(utt_file), phones_and_durations, main_phones, emotion, word_seq, word_intervals] # save spmel file name and phone sequence
                 content_list.append(utt_content)
                 success_cases += 1
             else:

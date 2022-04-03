@@ -28,9 +28,12 @@ def get_config():
     parser.add_argument("--phone_dir", type=str, default=ABS_PATH + "/phoneme/gentle/align_results", help="path to the phonetic alignment json files")
     parser.add_argument("--phone_dict_file", type=str, default=ABS_PATH + "/phoneme/gentle/phone_dict.csv",help="path to phone dictionary file")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
-    parser.add_argument("--npz_dir", type=str, default=ABS_PATH + "/full_data", help="Path to npz file")
+    # parser.add_argument("--npz_dir", type=str, default=ABS_PATH + "/full_data", help="Path to npz file")
     parser.add_argument("--freq", type=int, default=16000, help="speech frequency")
     parser.add_argument("--hop_len", type=int, default=320, help="hop length")
+    parser.add_argument("--fold_dir", type=str, default=ABS_PATH + "/full_data/folds", help="/audio/organize_folds.py")
+    parser.add_argument("--table_dir", type=str, default=ABS_PATH + "/full_data/table", help="Path to table dir")
+
     # 이렇게 parser_helper가 최상위에 있으면 parser_helper 기준과 해당 parameter을 실질적으로 사용하는 코드의 위치가 달라져 버림
     # 그래서 이런 parser_helper은 사용하고자 하는 파일과 동일한 위치에 넣어줘야하는것이 맞음
     # 노우 그렇지 않음 -> 절대 경로로 설정하면 이런일 없음
@@ -39,6 +42,7 @@ def get_config():
 
     phone_dict = ph.get_phone_dict(parser_config.phone_dict_file)
 
+    parser_config.npz_dir = str(parser_config.spec_dir)
     parser_config.frame_len = float(parser_config.hop_len / parser_config.freq)  # = hop_length/freq spectrogram frame duration in seconds # frame의 길이를 초로 표현
     parser_config.phone_dict = phone_dict
 
