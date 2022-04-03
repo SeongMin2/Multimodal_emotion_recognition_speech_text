@@ -27,8 +27,8 @@ def get_config():
     parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/audio/spectrum", help="Path to spectrum files")
     parser.add_argument("--phone_dir", type=str, default=ABS_PATH + "/phoneme/gentle/align_results", help="path to the phonetic alignment json files")
     parser.add_argument("--phone_dict_file", type=str, default=ABS_PATH + "/phoneme/gentle/phone_dict.csv",help="path to phone dictionary file")
-    parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/data/speech", help="Path to wave files")
-    parser.add_argument("--npz_dir", type=str, default=ABS_PATH + "/data", help="Path to npz file")
+    parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
+    parser.add_argument("--npz_dir", type=str, default=ABS_PATH + "/full_data", help="Path to npz file")
     parser.add_argument("--freq", type=int, default=16000, help="speech frequency")
     parser.add_argument("--hop_len", type=int, default=320, help="hop length")
     # 이렇게 parser_helper가 최상위에 있으면 parser_helper 기준과 해당 parameter을 실질적으로 사용하는 코드의 위치가 달라져 버림

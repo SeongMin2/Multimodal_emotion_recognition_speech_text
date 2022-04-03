@@ -13,6 +13,7 @@ IEMOCAP_full_release/
 audio/spectrum/
 extraction/
 data/
+full_data/
 
 phoneme/gentle/align_results/
 
