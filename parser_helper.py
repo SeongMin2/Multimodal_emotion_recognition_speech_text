@@ -6,12 +6,25 @@ import os
 import numpy as np
 from pathlib import Path
 from phoneme.gentle import phone_seq as ph
+import glob
+import pandas as pd
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")
 LOG_PATH = date_time + ".log"
 
 ABS_PATH = 'C:\SPB_Data\iemocap_preprocessing'
+
+def get_label(config, file_name, session):
+    file_name = file_name[:-4]
+    tables = glob.glob(config.table_dir + "/" + "*.csv")
+    table_name = [file for file in tables if session in file]
+    table_path = table_name[0]
+    df = pd.read_csv(table_path)
+
+    label = df[df['wav_file'] == file_name]['emotion'].values[0]
+
+    return label
 
 def save_data(speakers, config):
     """ Save npz data file """
