@@ -17,7 +17,7 @@ def save_data(speakers, config):
     """ Save npz data file """
     logger('info','[INFO] Speakers length: ' + str(len(speakers)))
 
-    np.savez(config.npz_dir+'/' +config.mode+'.npz', feature=speakers)
+    np.savez(config.npz_dir+'/' +config.mode+'.npz', feature=speakers) # 내가 feature라고 설정한거임
 # 일단 이렇게 해놓고 나중에 수정
 
 def get_config():

@@ -8,11 +8,20 @@ import random
 import numpy as np
 from pathlib import Path
 
+
+a = np.load("./data/train.npz", allow_pickle=True)
+print(a)
+pass
+
+'''
+# 절대 경로 실험
 ABS_PATH = str(Path(".").absolute()) # 이 absolute는 이 코드가 위치하는 파일 기준이 아니라 실행되는 코드 기준의 경로임
 abs = 'C:\\SPB_Data\\iemocap_preprocessing'
 ab = 'C:\SPB_Data\iemocap_preprocessing'
 print(abs)
 pass
+'''
+
 '''
 a = [['hello','a'],['bye','b']]
 np.savez('test.npz',a)
