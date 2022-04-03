@@ -58,6 +58,7 @@ def get_data(config):
                 # get_content_list는 make_data_helper.py 안에 있고 이 get_content_list안에 phone_seq.py안에 있는 get_phone_seq라는 함수를 통해서
                 # phone 정보 추출해서 리턴 되것지
                 # content_list
+                # 이미 여기서 text 처리 해버리는데
 
                 if (len(content_list) > 0):
                     for element in content_list:

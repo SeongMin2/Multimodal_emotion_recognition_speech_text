@@ -56,8 +56,8 @@ def get_content_list(file_list, speaker_dir, config):
             if success:
                 assert main_phones.shape[0] == spec.shape[0]
                 utt_file = os.path.join(speaker_dir ,file_name)
-                word_seq, word_intervals = ph.get_word_seq_and_intervals(json_file=phone_seq_file_path)
-                utt_content = [str(utt_file), phones_and_durations, main_phones, emotion, word_seq, word_intervals] # save spmel file name and phone sequence
+                word_seq, word_intervals, txt = ph.get_word_seq_and_intervals(json_file=phone_seq_file_path) #일단 나는 word_seq를 버릴래 이거 쓸곳도 없음
+                utt_content = [str(utt_file), phones_and_durations, main_phones, emotion, txt, word_intervals] # save spmel file name and phone sequence
                 content_list.append(utt_content)
                 success_cases += 1
             else:

@@ -1,4 +1,4 @@
-import os
+import os, sys
 import random
 import torch
 import numpy as np
@@ -14,46 +14,125 @@ logger = logging.getLogger(__name__)
 
 class SpeechTextDataset(Dataset):
     def __init__(self,
-                 dataset_path: str,
-                 wav_paths: list,
+                 config,
+                 dataset_dir: str, # 이거는 그 spectrum이랑, npz데이터 있는 train_dataset path
+                 wav_dir: str, # 이거는 원래 날 것의 wav파일들의 path -> get_item할 때 마다 wav2vec2 하려고 ㅎ
                  npz_file,
-                 transcripts: list,
-                 emotions: list,
+                 # transcripts: list,
+                 # emotions: list,
                  tokenizer,
                  sos_token: int,
                  eos_token: int,
                  sample_rate: int
                  ) -> None:
         super(SpeechTextDataset, self).__init__()
-        self.dataset_path = dataset_path
-        self.wav_paths = wav_paths
-        self.transcripts = transcripts
-        self.emotions = emotions
+        self.dataset_dir = dataset_dir
+        self.wav_dir = wav_dir
+        self.len_crop = config.len_crop
+        self.speech_input = config.speech_input
         self.tokenizer = tokenizer
-        self.dataset_size = len(self.wav_paths)
-        self.transforms = apply_wav2vec
+        self.transforms = apply_wav2vec # 일단 default로 wav2vec2.0 transform으로 해둠 (일단은)
         self.sos_token = sos_token
         self.eos_token = eos_token
         self.sample_rate = sample_rate
         self._load_wav = load_wav
 
-        metaname = os.path.join(self.data_dir, npz_file)
+        metaname = os.path.join(self.dataset_dir, npz_file)
         metadata = np.load(metaname, allow_pickle=True)
+        metadata = metadata['feature']
+
+        # initialize the dataset
+        dataset = [None] * len(metadata)
+
+        for k, element in enumerate(metadata, 0):
+            # load the spectrogram
+            spec = np.load(os.path.join(self.data_dir, element[0]))
+
+            # check if audio and features have the same shape
+            self.check_audio_and_feat_shape(audio=spec, element=element)
+
+            dataset[k] = self.get_dataset_sample(spec=spec, element=element,config=config)
+
+        self.dataset = list(dataset)
+        self.num_tokens = len(self.dataset)
+
+        print("num utterances: ", self.num_tokens)  # number of utterances
+        print("Finished loading the dataset...")
         
-    
-        # 여기 받아오는것은 phone seq까지해야 코드를 짤 수 있을듯
-        #for k, element in enumerate(metadata,0):
+        # log 나중에 할까나
+
+
+    def check_audio_and_feat_shape(self, audio, element):
+        """ Check if the audio shape matches the features shape """
+        if not (audio.shape[0] == element[2].shape[0]):
+            print("[ERROR] Audio and main phone sequence do not have the same size")
+            sys.exit(1)
+
+    def get_dataset_sample(self, spec, element, config):
+        """ Return a dataset sample """
+        data_sample = [element[0], spec, element[-2], element[2], element[3], element[4], element[-3]]
+
+        if config.speech_input == "wav2vec":
+            self.transforms = apply_wav2vec
+
+        elif config.speech_input == "spec":
+            pass # 일단 pass 나중에는 spec 변환하는 함수로 바꾸기
+        
+        return data_sample
+
+    def select_data_sample_to_return(self, gt_config, features):
+        """ Determines how to return the data sample """
+
+        if gt_config["speech_input"] == "wav2vec":
+            return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"], features["wav2vec_feat"]
+            # spectrum, emb_org, phone, emotion_label, wav2vec_feature
+        elif gt_config["speech_input"] == "spec":
+            return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"]
+
+
+    def zero_pad(self, array, len_pad):
+        """ Zero pads a 2d array with zeros to the right """
+        return np.pad(array, ((0, len_pad), (0, 0)), "constant")
+
+    def zero_pad_feats(self, features, gt_config):
+        """ Zero pads the features that are too short"""
+
+        wav2vec_feat = None
+        len_pad = gt_config["len_crop"] - features["spec"].shape[0]
+        features['spec'] = self.zero_pad(features["spec"], len_pad)
+        features["phones"] = self.zero_pad(features["phones"], len_pad)
+
+        if gt_config["speech_input"] == "wav2vec":
+            features["wav2vec_feat"] = np.pad(features["wav2vec_feat"], ((0, 0), (0, len_pad), (0, 0)), "constant")
+
+        return features
+
+
+    def feats_crop(self, features, left, gt_config):
+        """ Crops the features from a starting point to the left """
+        features["spec"] = features["spec"][left:left + gt_config["len_crop"], :]
+        features["phones"] = features["phones"][left:left + gt_config["len_crop"], :]
+        if gt_config["speech_input"] == "wav2vec":
+            features["wav2vec_feat"] = features["wav2vec_feat"][:, left:left + gt_config["len_crop"], :]
+
+        return features
+
+    def random_feats_crop(self, features, gt_config):
+        """ Crops the features randomly """
+        # randomly crop the utterance
+        left = np.random.randint(features["spec"].shape[0] - gt_config["len_crop"])
+        return self.feats_crop(features, left, gt_config)
 
     def _get_emotion_class(self, label):
         emotion_class = 0
 
-        if ((label == "Happy") or (label == "Excited")):
+        if ((label == "hap") or (label == "exc")):
             emotion_class = 2
-        elif (label == "Angry"):
+        elif (label == "ang"):
             emotion_class = 0
-        elif (label == "Neutral"):
+        elif (label == "neu"):
             emotion_class = 1
-        elif (label == "Sad"):
+        elif (label == "sad"):
             emotion_class = 3
         return emotion_class
 
@@ -95,24 +174,57 @@ class SpeechTextDataset(Dataset):
 
         return transcript
 
-    def __getitem__(self, idx) -> dict:
+    def __getitem__(self, idx): # -> dict:
         """ Provides paif of audio & transcript """
 
         ## 여기서 emotion에 대해서 one hot encoder 형태로 바꿔줘야함 아직 안함
         # emotion one hot으로 바꾸는 함수 만들어서 하면 될듯
-        
-        wav_path = os.path.join(self.dataset_path, self.wav_paths[idx])
 
-        feature = self._parse_wav(wav_path)
-        transcript = self._parse_transcript(self.transcripts[idx])
-        emotion_label = self._get_emotion_class(self.emotions[idx])
+        gt_config={}
+        gt_config["len_crop"] = self.len_crop
+        gt_config["speech_input"] = self.speech_input
 
-        return {
-            'wav2vec_feature' : np.array(feature, dtype=np.float_),
-            'transcript' : np.array(transcript, dtype=np.int_),
-            'label' : emotion_label
-        }
+        data_sample = self.dataset[idx]
+
+        # get datasample basic features
+        file_name, spec, spk_emb, phones, emotion_class, txt = data_sample[0:6]
+
+        npy_path = str(file_name)
+        wav_path = str(npy_path[:-4] + ".wav")
+        wav_path = os.path.join(self.wav_dir, wav_path)
+
+        wav2vec_feat = self._parse_wav(wav_path) # wav2vec feature results
+
+        emotion_label = self._get_emotion_class(emotion_class)
+
+
+        features = {}
+        features["spec"] = spec
+        features["phones"] = phones
+        features["emb_org"] = spk_emb
+        features["all_wav2vec_feat"] = wav2vec_feat
+        features["text"] = txt
+        features["emotion_lb"] = emotion_label
+
+        # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
+        # 이거 확인해야함
+        if spec.shape[0] < self.len_crop:
+            features = self.zero_pad_feats(features=features, gt_config=gt_config)
+        # if the utterance is too long (crop)
+        elif spec.shape[0] > self.len_crop:
+            # randomly crop the utterance
+            features = self.random_feats_crop(features, gt_config)
+        # if the utterance has the exact crop size
+        else:
+            pass
+        #transcript = self._parse_transcript(self.transcripts[idx])
+
+        return (self.select_data_sample_to_return(gt_config, features))
 
     def __len__(self):
-        return len(self.wav_paths)
+        return len(self.dataset)
 
+
+# 가서 해야할 것
+# fold 단위로 npz 파일 저장시키기 위에 이거 직접 돌려보기
+# crop pad부분에 대해서 유의해서 보기

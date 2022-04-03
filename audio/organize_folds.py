@@ -18,8 +18,8 @@ def main(config):
     config = parser.parse_args()
     '''
 
-    src_dir = './' + config.spmel_dir
-    folds_dir = "./" + config.folds_dir
+    src_dir = config.spec_dir
+    folds_dir = config.folds_dir
 
     for session in range(1, 6):
         for fold in range(1, 6):

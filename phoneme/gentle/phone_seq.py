@@ -54,6 +54,7 @@ def get_word_seq_and_intervals(json_file):
         return [], []
 
     # go through all words
+    txt = json_data['transcript']
     words = json_data["words"]
     for word in words:
         if (word["case"] == "success"):
@@ -64,7 +65,7 @@ def get_word_seq_and_intervals(json_file):
 
     assert len(word_seq) == len(word_intervals)
 
-    return word_seq, word_intervals
+    return word_seq, word_intervals, txt
 
 def remove_punctuation(word):
     """ Remove punctuation from string word """

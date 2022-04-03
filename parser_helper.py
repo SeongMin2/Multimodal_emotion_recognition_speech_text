@@ -36,7 +36,7 @@ def save_data(speakers, config):
 def get_config():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--mode", type=str, default="train", help="train or test mode" )
+    parser.add_argument("--mode", type=str, default="train", help="train or test mode")
     parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/audio/spectrum", help="Path to spectrum files")
     parser.add_argument("--phone_dir", type=str, default=ABS_PATH + "/phoneme/gentle/align_results", help="path to the phonetic alignment json files")
     parser.add_argument("--phone_dict_file", type=str, default=ABS_PATH + "/phoneme/gentle/phone_dict.csv",help="path to phone dictionary file")
@@ -44,7 +44,7 @@ def get_config():
     # parser.add_argument("--npz_dir", type=str, default=ABS_PATH + "/full_data", help="Path to npz file")
     parser.add_argument("--freq", type=int, default=16000, help="speech frequency")
     parser.add_argument("--hop_len", type=int, default=320, help="hop length")
-    parser.add_argument("--fold_dir", type=str, default=ABS_PATH + "/full_data/folds", help="/audio/organize_folds.py")
+    parser.add_argument("--folds_dir", type=str, default=ABS_PATH + "/full_data/folds", help="/audio/organize_folds.py")
     parser.add_argument("--table_dir", type=str, default=ABS_PATH + "/full_data/table", help="Path to table dir")
 
     # 이렇게 parser_helper가 최상위에 있으면 parser_helper 기준과 해당 parameter을 실질적으로 사용하는 코드의 위치가 달라져 버림
@@ -55,12 +55,35 @@ def get_config():
 
     phone_dict = ph.get_phone_dict(parser_config.phone_dict_file)
 
-    parser_config.npz_dir = str(parser_config.spec_dir)
+    parser_config.npz_dir = str(parser_config.spec_dir) # 여기에 이 spectrum의 경로를 fold 경로로 잡게 되어서 ㅇㅇ 위에서는 default이고 저기에 입력 넣어줄거임
     parser_config.frame_len = float(parser_config.hop_len / parser_config.freq)  # = hop_length/freq spectrogram frame duration in seconds # frame의 길이를 초로 표현
     parser_config.phone_dict = phone_dict
 
 
     return parser_config
+
+def get_training_config():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--data_dir", type=str, default="./full_data", help="Path to data dir")
+    parser.add_argument("--train_dir", type=str, default="", help="Path to train data dir")
+    parser.add_argument("--train_dir", type=str, default="", help="Path to test data dir")
+    parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
+
+    parser.add_argument("--speech_input", type=str, default="wav2vec", help="Encoding method of speech input")
+
+    parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
+
+    # Input spectrogram configuration
+    parser.add_argument("--len_crop", type=int, default=96, help="dataloader output sequence length")
+    parser.add_argument("--num_mels", type=int, default=80, help="number of mel features at each frame (it should include delta and delta-delta if using those features)")
+    parser.add_argument("--wav2vec_feat_len", type=int, default=1024, help="size of wav2vec features")
+
+
+    parser_config = parser.parse_args()
+
+    return parser_config
+
 
 def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_terminal=True):
     """
