@@ -38,6 +38,8 @@ def save_spect(file_list, dir_name, subdir, a, b, mel_basis, min_level, target_d
     """ Saves a spectrogram as an npy file """
 
     for file_name in sorted(file_list):
+        assert ".wav" in file_name, "the format of file should be .wav"
+
         print("Processing ", file_name)
         # Read audio file
         x, _ = sf.read(os.path.join(dir_name,subdir, file_name))
@@ -96,7 +98,7 @@ def spect_transform(config, target_dir):
 def main():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--speech_dir", type=str, default='../data/speech',help="directory to the speech wave files")
+    parser.add_argument("--speech_dir", type=str, default='../full_data/speech',help="directory to the speech wave files")
     parser.add_argument("--spmel_dir", type=str, default='spectrum', help="directory of the spmel files")
     parser.add_argument("--freq", type=int, default=16000, help="type of encoder architecture")
     parser.add_argument("--fft_len", type=int, default=400, help="size of a fft window")
