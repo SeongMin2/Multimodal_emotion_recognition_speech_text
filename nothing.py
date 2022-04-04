@@ -1,16 +1,19 @@
 import os
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchtext
-from torchtext import data, datasets
+#import torch
+#import torch.nn as nn
+#import torch.nn.functional as F
+#import torchtext
+#from torchtext import data, datasets
 import random
 import numpy as np
-from pathlib import Path
+#from pathlib import Path
 
+print('I can do it!')
+'''
 a = np.load("./full_data/train.npz", allow_pickle=True)
 print(a)
 pass
+'''
 
 '''
 # 절대 경로 실험

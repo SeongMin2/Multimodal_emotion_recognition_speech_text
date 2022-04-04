@@ -18,11 +18,9 @@ class SpeechTextDataset(Dataset):
                  dataset_dir: str, # 이거는 그 spectrum이랑, npz데이터 있는 train_dataset path
                  wav_dir: str, # 이거는 원래 날 것의 wav파일들의 path -> get_item할 때 마다 wav2vec2 하려고 ㅎ
                  npz_file,
-                 # transcripts: list,
-                 # emotions: list,
-                 tokenizer,
-                 sos_token: int,
-                 eos_token: int,
+                 #tokenizer,
+                 #sos_token: int,
+                 #eos_token: int,
                  sample_rate: int
                  ) -> None:
         super(SpeechTextDataset, self).__init__()
@@ -30,14 +28,14 @@ class SpeechTextDataset(Dataset):
         self.wav_dir = wav_dir
         self.len_crop = config.len_crop
         self.speech_input = config.speech_input
-        self.tokenizer = tokenizer
+        #self.tokenizer = tokenizer
         self.transforms = apply_wav2vec # 일단 default로 wav2vec2.0 transform으로 해둠 (일단은)
-        self.sos_token = sos_token
-        self.eos_token = eos_token
+        #self.sos_token = sos_token
+        #self.eos_token = eos_token
         self.sample_rate = sample_rate
         self._load_wav = load_wav
 
-        metaname = os.path.join(self.dataset_dir, npz_file)
+        metaname = os.path.join(self.dataset_dir, npz_file + ".npz")
         metadata = np.load(metaname, allow_pickle=True)
         metadata = metadata['feature']
 
@@ -46,7 +44,7 @@ class SpeechTextDataset(Dataset):
 
         for k, element in enumerate(metadata, 0):
             # load the spectrogram
-            spec = np.load(os.path.join(self.data_dir, element[0]))
+            spec = np.load(os.path.join(self.dataset_dir, element[0]))
 
             # check if audio and features have the same shape
             self.check_audio_and_feat_shape(audio=spec, element=element)

@@ -36,8 +36,9 @@ def save_data(speakers, config):
 def get_config():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--mode", type=str, default="train", help="train or test mode")
-    parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/audio/spectrum", help="Path to spectrum files")
+    parser.add_argument("--mode", type=str, default="test", help="train or test mode")
+    parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/full_data/folds/fold5/test", help="Path to spectrum files")
+    # parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/audio/spectrum", help="Path to spectrum files")
     parser.add_argument("--phone_dir", type=str, default=ABS_PATH + "/phoneme/gentle/align_results", help="path to the phonetic alignment json files")
     parser.add_argument("--phone_dict_file", type=str, default=ABS_PATH + "/phoneme/gentle/phone_dict.csv",help="path to phone dictionary file")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
@@ -66,8 +67,8 @@ def get_training_config():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--data_dir", type=str, default="./full_data", help="Path to data dir")
-    parser.add_argument("--train_dir", type=str, default="", help="Path to train data dir")
-    parser.add_argument("--train_dir", type=str, default="", help="Path to test data dir")
+    parser.add_argument("--train_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/train", help="Path to train data dir")
+    parser.add_argument("--test_dir", type=str, default= ABS_PATH + "/full_data/folds/fold1/test", help="Path to test data dir")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
 
     parser.add_argument("--speech_input", type=str, default="wav2vec", help="Encoding method of speech input")
