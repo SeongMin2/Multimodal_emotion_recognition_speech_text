@@ -24,7 +24,7 @@ def get_spec(speech):
     config["min_f"]=90
     config["max_f"]=7600
 
-    mel_basis = mel(config["freq"], config["fft_len"], fmin=config["min_f"], fmax=config["max_f"], n_mels=config["mel_bins"]).T
+    mel_basis = mel(sr =config["freq"], n_fft =config["fft_len"], fmin=config["min_f"], fmax=config["max_f"], n_mels=config["mel_bins"]).T
     min_level = np.exp(-100 / 20 * np.log(10))
     b, a = butter_highpass(30, config["freq"], order=5)
 
