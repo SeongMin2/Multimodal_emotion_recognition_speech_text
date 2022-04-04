@@ -14,6 +14,7 @@ audio/spectrum/
 extraction/
 data/
 full_data/
+ABS_PATH.py
 
 phoneme/gentle/align_results/
 

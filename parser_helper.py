@@ -8,12 +8,13 @@ from pathlib import Path
 from phoneme.gentle import phone_seq as ph
 import glob
 import pandas as pd
+from .ABS_PATH import ABS_PATH
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")
 LOG_PATH = date_time + ".log"
 
-ABS_PATH = 'C:\SPB_Data\iemocap_preprocessing'
+ABS_PATH = ABS_PATH
 
 def get_label(config, file_name, session):
     file_name = file_name[:-4]
