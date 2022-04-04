@@ -8,6 +8,10 @@ import random
 import numpy as np
 #from pathlib import Path
 
+a = 1
+if a == 1 or 2:
+    print('ya')
+
 print('I can do it!')
 '''
 a = np.load("./full_data/train.npz", allow_pickle=True)

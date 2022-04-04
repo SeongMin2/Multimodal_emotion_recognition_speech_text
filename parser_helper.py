@@ -8,7 +8,7 @@ from pathlib import Path
 from phoneme.gentle import phone_seq as ph
 import glob
 import pandas as pd
-from .ABS_PATH import ABS_PATH
+from ABS_PATH import ABS_PATH
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")

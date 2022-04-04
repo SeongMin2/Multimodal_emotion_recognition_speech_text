@@ -3,6 +3,7 @@ import random
 import torch
 import numpy as np
 import logging
+import math
 # from omegaconf import DictConfig
 from torch import Tensor
 from torch.utils.data import Dataset
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 class SpeechTextDataset(Dataset):
     def __init__(self,
                  config,
+                 mode: str,
                  dataset_dir: str, # 이거는 그 spectrum이랑, npz데이터 있는 train_dataset path
                  wav_dir: str, # 이거는 원래 날 것의 wav파일들의 path -> get_item할 때 마다 wav2vec2 하려고 ㅎ
                  npz_file,
@@ -24,6 +26,7 @@ class SpeechTextDataset(Dataset):
                  sample_rate: int
                  ) -> None:
         super(SpeechTextDataset, self).__init__()
+        self.mode = mode
         self.dataset_dir = dataset_dir
         self.wav_dir = wav_dir
         self.len_crop = config.len_crop
@@ -34,6 +37,8 @@ class SpeechTextDataset(Dataset):
         #self.eos_token = eos_token
         self.sample_rate = sample_rate
         self._load_wav = load_wav
+
+        assert self.mode == "train" or "test", "mode should be 'train' or 'test'."
 
         metaname = os.path.join(self.dataset_dir, npz_file + ".npz")
         metadata = np.load(metaname, allow_pickle=True)
@@ -82,7 +87,15 @@ class SpeechTextDataset(Dataset):
         """ Determines how to return the data sample """
 
         if gt_config["speech_input"] == "wav2vec":
-            return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"], features["wav2vec_feat"]
+            return {
+                "spec": features["spec"],
+                "spk_emb": features["spk_emb"],
+                "phones": features["phones"],
+                "emotion_lb": features["emotion_lb"],
+                "text": features["text"],
+                "wav2vec_feat": features["wav2vec_feat"]
+            }
+            # return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"], features["wav2vec_feat"]
             # spectrum, emb_org, phone, emotion_label, wav2vec_feature
         elif gt_config["speech_input"] == "spec":
             return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"]
@@ -120,6 +133,39 @@ class SpeechTextDataset(Dataset):
         # randomly crop the utterance
         left = np.random.randint(features["spec"].shape[0] - gt_config["len_crop"])
         return self.feats_crop(features, left, gt_config)
+
+    def crop_utt_segments(self, features, db_config):
+        """ For all the features, crop all the segments in an utterance
+            and return them as lists """
+        num_segments = math.floor(features["spec"].shape[0] / db_config["len_crop"])
+        uttr = []
+        content_emb = []
+        wav2vec_feat = []
+        # crop and append the segments
+        for seg_i in range(num_segments):
+            uttr.append(features["spec"][seg_i * db_config["len_crop"]:(seg_i + 1) * db_config["len_crop"], :])
+            content_emb.append(features["phones"][seg_i * db_config["len_crop"]:(seg_i + 1) * db_config["len_crop"], :])
+            if db_config["speech_input"] == "wav2vec":
+                wav2vec_feat.append(
+                    features["all_wav2vec_feat"][:, seg_i * db_config["len_crop"]:(seg_i + 1) * db_config["len_crop"],
+                    :])
+        # check if there is a last segment that needs padding
+        if ((features["spec"].shape[0] - num_segments * db_config["len_crop"]) > 1):
+            len_pad = db_config["len_crop"] - (features["spec"].shape[0] - db_config["len_crop"] * num_segments)
+            uttr.append(
+                np.pad(features["spec"][num_segments * db_config["len_crop"]:, :], ((0, len_pad), (0, 0)), "constant"))
+            content_emb.append(
+                np.pad(features["phones"][num_segments * db_config["len_crop"]:, :], ((0, len_pad), (0, 0)),
+                       "constant"))
+            if db_config["speech_input"] == "wav2vec":
+                wav2vec_feat.append(np.pad(features["all_wav2vec_feat"][:, num_segments * db_config["len_crop"]:, :],
+                                           ((0, 0), (0, len_pad), (0, 0)), "constant"))
+
+        features["spec"] = uttr
+        features["phones"] = content_emb
+        features["wav2vec_feat"] = wav2vec_feat
+
+        return features
 
     def _get_emotion_class(self, label):
         emotion_class = 0
@@ -199,8 +245,8 @@ class SpeechTextDataset(Dataset):
         features = {}
         features["spec"] = spec
         features["phones"] = phones
-        features["emb_org"] = spk_emb
-        features["all_wav2vec_feat"] = wav2vec_feat
+        features["spk_emb"] = spk_emb
+        features["wav2vec_feat"] = wav2vec_feat
         features["text"] = txt
         features["emotion_lb"] = emotion_label
 
@@ -210,8 +256,11 @@ class SpeechTextDataset(Dataset):
             features = self.zero_pad_feats(features=features, gt_config=gt_config)
         # if the utterance is too long (crop)
         elif spec.shape[0] > self.len_crop:
-            # randomly crop the utterance
-            features = self.random_feats_crop(features, gt_config)
+            if self.mode == "train":
+                # randomly crop the utterance
+                features = self.random_feats_crop(features, gt_config)
+            elif self.mode == "test":
+                features = self.crop_utt_segments(features,gt_config)
         # if the utterance has the exact crop size
         else:
             pass

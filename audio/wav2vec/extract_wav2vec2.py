@@ -66,10 +66,7 @@ def apply_wav2vec(batch, sr:int):
 sr = 16000
 speech, _sr = librosa.load('../../IEMOCAP_full_release/Session1/sentences/wav/Ses01F_impro01/Ses01F_impro01_F000.wav', sr=sr)
 feature = apply_wav2vec(speech,sr)
-# feature의 shape는 (25,98,1024) 잘 나옴
+# feature의 shape는 (25,98,1024) 잘 나옴 # 아 98부분은 파일에 따라서 다름
 print('hi')
 pass
 '''
-
-
-
