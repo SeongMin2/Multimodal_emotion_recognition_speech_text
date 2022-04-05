@@ -72,15 +72,24 @@ def get_training_config():
     parser.add_argument("--test_dir", type=str, default= ABS_PATH + "/full_data/folds/fold1/test", help="Path to test data dir")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
 
-    parser.add_argument("--speech_input", type=str, default="wav2vec", help="Encoding method of speech input")
-
     parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
 
-    # Input spectrogram configuration
-    parser.add_argument("--len_crop", type=int, default=96, help="dataloader output sequence length")
-    parser.add_argument("--num_mels", type=int, default=80, help="number of mel features at each frame (it should include delta and delta-delta if using those features)")
-    parser.add_argument("--wav2vec_feat_len", type=int, default=1024, help="size of wav2vec features")
+    # Bottleneck configuration
+    parser.add_arugment("-dim_neck", type=int, default=32)
+    parser.add_argument("--freq", type=int, default=16)
 
+
+    # Input spectrogram configuration
+    parser.add_argument("--len_crop", type=int, default=96, help="Dataloader output sequence length")
+    parser.add_argument("--num_mels", type=int, default=80, help="Number of mel features at each frame (it should include delta and delta-delta if using those features)")
+    parser.add_argument("--wav2vec_feat_len", type=int, default=1024, help="Number of wav2vec features length")
+    parser.add_argument("--speech_input", type=str, default="wav2vec", help="Encoding method of speech input")
+
+    parser.add_argument("--spk_feat_len", type=int, default=256, help="number of speaker identity embedding length")
+
+    # model feauter size configuration
+    parser.add_argument("--conv_dim", type=int, default=512, help="Number of convolution channel or Number of kernels")
+    # Paper에는 2048로 나와 있는데 code는 512를 쓰네 ㅎ
     parser.add_argument("--txt_feat_model", type=str, default="bert-base-uncased", help='Text model for feature extraction')
 
 
