@@ -81,6 +81,8 @@ def get_training_config():
     parser.add_argument("--num_mels", type=int, default=80, help="number of mel features at each frame (it should include delta and delta-delta if using those features)")
     parser.add_argument("--wav2vec_feat_len", type=int, default=1024, help="size of wav2vec features")
 
+    parser.add_argument("--txt_feat_model", type=str, default="bert-base-uncased", help='Text model for feature extraction')
+
 
     parser_config = parser.parse_args()
 

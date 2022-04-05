@@ -8,6 +8,8 @@ import math
 from torch import Tensor
 from torch.utils.data import Dataset
 from .wav2vec.extract_wav2vec2 import apply_wav2vec
+from text.feature_embedding import extract_features
+from transformers import AutoModel, AutoTokenizer
 
 from audio.load import load_wav
 
@@ -31,6 +33,7 @@ class SpeechTextDataset(Dataset):
         self.wav_dir = wav_dir
         self.len_crop = config.len_crop
         self.speech_input = config.speech_input
+        self.txt_feat_model = config.txt_feat_model
         #self.tokenizer = tokenizer
         self.transforms = apply_wav2vec # 일단 default로 wav2vec2.0 transform으로 해둠 (일단은)
         #self.sos_token = sos_token
@@ -58,6 +61,9 @@ class SpeechTextDataset(Dataset):
 
         self.dataset = list(dataset)
         self.num_tokens = len(self.dataset)
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.txt_feat_model)
+        self.text_model = AutoModel.from_pretrained(self.txt_feat_model)
 
         print("num utterances: ", self.num_tokens)  # number of utterances
         print("Finished loading the dataset...")
@@ -93,7 +99,8 @@ class SpeechTextDataset(Dataset):
                 "phones": features["phones"],
                 "emotion_lb": features["emotion_lb"],
                 "text": features["text"],
-                "wav2vec_feat": features["wav2vec_feat"]
+                "wav2vec_feat": features["wav2vec_feat"],
+                "txt_feat" : features["txt_feat"]
             }
             # return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"], features["wav2vec_feat"]
             # spectrum, emb_org, phone, emotion_label, wav2vec_feature
@@ -207,7 +214,7 @@ class SpeechTextDataset(Dataset):
             transcript (str): transcript of audio file
         Returns
             transcript (list): transcript that added <sos> and <eos> tokens
-        """
+
         tokens = transcript.split(' ')
         transcript = list()
 
@@ -215,8 +222,10 @@ class SpeechTextDataset(Dataset):
         for token in tokens:
             transcript.append(int(token))
         transcript.append(int(self.eos_token))
+        """
+        feature = extract_features(transcript, self.tokenizer, self.text_model)
 
-        return transcript
+        return feature
 
     def __getitem__(self, idx): # -> dict:
         """ Provides paif of audio & transcript """
@@ -239,6 +248,8 @@ class SpeechTextDataset(Dataset):
 
         wav2vec_feat = self._parse_wav(wav_path) # wav2vec feature results
 
+        txt_feat = self._parse_transcript(txt)
+
         emotion_label = self._get_emotion_class(emotion_class)
 
 
@@ -248,6 +259,7 @@ class SpeechTextDataset(Dataset):
         features["spk_emb"] = spk_emb
         features["wav2vec_feat"] = wav2vec_feat
         features["text"] = txt
+        features['txt_feat'] = txt_feat
         features["emotion_lb"] = emotion_label
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
