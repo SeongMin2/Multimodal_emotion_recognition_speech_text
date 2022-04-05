@@ -82,14 +82,17 @@ def get_training_config():
     # Input spectrogram configuration
     parser.add_argument("--len_crop", type=int, default=96, help="Dataloader output sequence length")
     parser.add_argument("--num_mels", type=int, default=80, help="Number of mel features at each frame (it should include delta and delta-delta if using those features)")
-    parser.add_argument("--wav2vec_feat_len", type=int, default=1024, help="Number of wav2vec features length")
+    parser.add_argument("--dim_wav2vec_emb", type=int, default=1024, help="Number of wav2vec features length")
     parser.add_argument("--speech_input", type=str, default="wav2vec", help="Encoding method of speech input")
 
-    parser.add_argument("--spk_feat_len", type=int, default=256, help="number of speaker identity embedding length")
+    parser.add_argument("--dim_spk_emb", type=int, default=256, help="number of speaker identity embedding length")
+    parser.add_argument("--dim_phone_emb", type=int, default=128, help="Dimension size of phoneme (Number of phoneme embedding length)")
 
     # model feauter size configuration
     parser.add_argument("--conv_dim", type=int, default=512, help="Number of convolution channel or Number of kernels")
     # Paper에는 2048로 나와 있는데 code는 512를 쓰네 ㅎ
+    parser.add_argument("--dim_pre", type=int, default=512, help="Length of first LSTM module in Decoder")
+
     parser.add_argument("--txt_feat_model", type=str, default="bert-base-uncased", help='Text model for feature extraction')
 
 

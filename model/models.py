@@ -59,12 +59,12 @@ class Encoder(torch.nn.Module):
         conv_dim = config.conv_dim
 
         if config.speech_input == "wav2vec":
-            input_len = config.wav2vec_feat_len
+            input_len = config.dim_wav2vec_emb
             conv_dim = 2048
         elif config.speech_input == "spec":
             input_len = config.num_mels
 
-        self.input_len = input_len + config.spk_feat_len
+        self.input_len = input_len + config.dim_spk_emb
 
         convolutions = []
         for i in range(3):
@@ -135,7 +135,7 @@ class PhoneEncoder(nn.Module):
         super(PhoneEncoder, self).__init__()
 
         # input to the phone encoder are phones
-        input_dim = config.dim_phone
+        input_dim = config.dim_phone_emb
         conv_dim = 512
 
         # convolution layers
@@ -175,7 +175,7 @@ class Decoder(nn.Module):
         super(Decoder, self).__init__()
 
         # define the input size
-        lstm_in = config.dim_neck * 2 + config.dim_emb + config.dim_phone_emb * 2
+        lstm_in = config.dim_neck * 2 + config.dim_spk_emb + config.dim_phone_emb * 2
 
         # first lstm layer
         self.lstm1 = nn.LSTM(lstm_in, config.dim_pre, 1, batch_first=True)
