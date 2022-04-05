@@ -127,6 +127,46 @@ class Encoder(torch.nn.Module):
         return codes
 
 
+class PhoneEncoder(nn.Module):
+    """ PhoneEncoder module:
+    """
+
+    def __init__(self, config):
+        super(PhoneEncoder, self).__init__()
+
+        # input to the phone encoder are phones
+        input_dim = config.dim_phone
+        conv_dim = 512
+
+        # convolution layers
+        convolutions = []
+        for i in range(3):
+            conv_layer = nn.Sequential(
+                ConvNorm(input_dim if i == 0 else conv_dim,
+                         conv_dim,
+                         kernel_size=5, stride=1,
+                         padding=2,
+                         dilation=1, w_init_gain='relu'),
+                nn.BatchNorm1d(conv_dim))
+            convolutions.append(conv_layer)
+        self.convolutions = nn.ModuleList(convolutions)
+
+        # lstm layer
+        self.lstm = nn.LSTM(conv_dim, config.dim_phone_emb, 2, batch_first=True, bidirectional=True)
+
+    def forward(self, x):
+
+        x = x.squeeze(1).transpose(2, 1)
+
+        for conv in self.convolutions:
+            x = F.relu(conv(x))
+        x = x.transpose(1, 2)
+        self.lstm.flatten_parameters()
+        outputs, _ = self.lstm(x)
+
+        return outputs
+
+
 class Decoder(nn.Module):
     """ Decoder module:
     """
