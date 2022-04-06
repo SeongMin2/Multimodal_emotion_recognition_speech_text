@@ -213,4 +213,93 @@ class Decoder(nn.Module):
         return decoder_output
 
 
+class Postnet(nn.Module):
+    """ Postnet
+        Five 1-d convolutions with 512 channels and kernel size 5
+        The last layers of the decoder
+    """
 
+    def __init__(self, config):
+        super(Postnet, self).__init__()
+        self.convolutions = nn.ModuleList()
+
+        in_out_dim = config.num_mels
+
+        # 1 convolution here
+        self.convolutions.append(
+            nn.Sequential(
+                ConvNorm(in_out_dim, 512,
+                         kernel_size=5, stride=1,
+                         padding=2,
+                         dilation=1, w_init_gain='tanh'),
+                nn.BatchNorm1d(512))
+        )
+        # 3 convolutions here
+        for i in range(1, 5 - 1):
+            self.convolutions.append(
+                nn.Sequential(
+                    ConvNorm(512,
+                             512,
+                             kernel_size=5, stride=1,
+                             padding=2,
+                             dilation=1, w_init_gain='tanh'),
+                    nn.BatchNorm1d(512))
+            )
+        # 1 convolution here
+        self.convolutions.append(
+            nn.Sequential(
+                ConvNorm(512, in_out_dim,
+                         kernel_size=5, stride=1,
+                         padding=2,
+                         dilation=1, w_init_gain='linear'),
+                nn.BatchNorm1d(in_out_dim))
+            )
+
+    def forward(self, x):
+        for i in range(len(self.convolutions) - 1):
+            x = torch.tanh(self.convolutions[i](x))
+
+        x = self.convolutions[-1](x)
+
+        return x
+
+
+class TxtModel(nn.Module):
+    """ Text model """
+
+    def __init__(self):
+        super(TxtModel, self).__init__()
+
+        self.conv1 = torch.nn.Conv1d(1024, 256,
+                                     kernel_size=1, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+        self.conv2 = torch.nn.Conv1d(256, 256,
+                                     kernel_size=1, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+        self.conv3 = torch.nn.Conv1d(256, 128,
+                                     kernel_size=8, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+        self.conv4 = torch.nn.Conv1d(128, 64,
+                                     kernel_size=4, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+
+        self.mean_pool = nn.AvgPool1d(118)
+
+        self.fc = nn.Linear(64, 4)
+
+    def forward(self, x):
+        x = x.transpose(1, 2)
+
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = F.relu(self.conv4(x))
+
+        x = self.mean_pool(x)
+        x = x.view(x.shape[0], x.shape[1])
+        x = torch.sigmoid(self.fc(x))
+        return x
