@@ -10,9 +10,17 @@ import numpy as np
 
 
 # def check_tokenizer_length():
+str = "hoell -- Heifm, faiejw IOQ"
+str_pre = str.lower()
 
+pass
 
-
+'''
+a = [[1,2],[2,3]]
+b = [[4,3], [4,5]]
+c = a+b
+pass
+'''
 
 '''
 a = 1
