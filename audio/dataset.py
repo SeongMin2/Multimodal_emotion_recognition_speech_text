@@ -22,9 +22,6 @@ class SpeechTextDataset(Dataset):
                  dataset_dir: str, # 이거는 그 spectrum이랑, npz데이터 있는 train_dataset path
                  wav_dir: str, # 이거는 원래 날 것의 wav파일들의 path -> get_item할 때 마다 wav2vec2 하려고 ㅎ
                  npz_file,
-                 #tokenizer,
-                 #sos_token: int,
-                 #eos_token: int,
                  sample_rate: int
                  ) -> None:
         super(SpeechTextDataset, self).__init__()
@@ -34,10 +31,7 @@ class SpeechTextDataset(Dataset):
         self.len_crop = config.len_crop
         self.speech_input = config.speech_input
         self.txt_feat_model = config.txt_feat_model
-        #self.tokenizer = tokenizer
         self.transforms = apply_wav2vec # 일단 default로 wav2vec2.0 transform으로 해둠 (일단은)
-        #self.sos_token = sos_token
-        #self.eos_token = eos_token
         self.sample_rate = sample_rate
         self._load_wav = load_wav
 
@@ -51,6 +45,12 @@ class SpeechTextDataset(Dataset):
         dataset = [None] * len(metadata)
 
         for k, element in enumerate(metadata, 0):
+            # filter categories
+            if str(element[3]) not in config.selected_catg:
+                continue
+
+            element[3] = self._get_emotion_class(element[3]) # element[3] is emotion class
+
             # load the spectrogram
             spec = np.load(os.path.join(self.dataset_dir, element[0]))
 
@@ -58,6 +58,10 @@ class SpeechTextDataset(Dataset):
             self.check_audio_and_feat_shape(audio=spec, element=element)
 
             dataset[k] = self.get_dataset_sample(spec=spec, element=element,config=config)
+
+        while None in dataset:
+            dataset.remove(None)
+
 
         self.dataset = list(dataset)
         self.num_tokens = len(self.dataset)
@@ -69,7 +73,6 @@ class SpeechTextDataset(Dataset):
         print("Finished loading the dataset...")
         
         # log 나중에 할까나
-
 
     def check_audio_and_feat_shape(self, audio, element):
         """ Check if the audio shape matches the features shape """
@@ -250,7 +253,7 @@ class SpeechTextDataset(Dataset):
 
         txt_feat = self._parse_transcript(txt)
 
-        emotion_label = self._get_emotion_class(emotion_class)
+        # emotion_label = self._get_emotion_class(emotion_class)
 
 
         features = {}
@@ -260,7 +263,7 @@ class SpeechTextDataset(Dataset):
         features["wav2vec_feat"] = wav2vec_feat
         features["text"] = txt
         features['txt_feat'] = txt_feat
-        features["emotion_lb"] = emotion_label
+        features["emotion_lb"] = emotion_class
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
         # 이거 확인해야함

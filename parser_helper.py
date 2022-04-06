@@ -75,7 +75,7 @@ def get_training_config():
     parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
 
     # Bottleneck configuration
-    parser.add_arugment("-dim_neck", type=int, default=32)
+    parser.add_argument("-dim_neck", type=int, default=32)
     parser.add_argument("--freq", type=int, default=16)
 
 
@@ -94,6 +94,8 @@ def get_training_config():
     parser.add_argument("--dim_pre", type=int, default=512, help="Length of first LSTM module in Decoder")
 
     parser.add_argument("--txt_feat_model", type=str, default="bert-base-uncased", help='Text model for feature extraction')
+
+    parser.add_argument("--selected_catg", type=list, default=["hap", "exc", "ang", "sad", "neu"], help="Limit categories")
 
 
     parser_config = parser.parse_args()
