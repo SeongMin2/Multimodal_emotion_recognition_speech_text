@@ -211,21 +211,7 @@ class SpeechTextDataset(Dataset):
         return feature
 
     def _parse_transcript(self, transcript: str) -> list:
-        """
-        Parses transcript
-        Args:
-            transcript (str): transcript of audio file
-        Returns
-            transcript (list): transcript that added <sos> and <eos> tokens
 
-        tokens = transcript.split(' ')
-        transcript = list()
-
-        transcript.append(int(self.sos_token))
-        for token in tokens:
-            transcript.append(int(token))
-        transcript.append(int(self.eos_token))
-        """
         feature = extract_features(transcript, self.tokenizer, self.text_model)
 
         return feature
@@ -254,7 +240,6 @@ class SpeechTextDataset(Dataset):
         txt_feat = self._parse_transcript(txt)
 
         # emotion_label = self._get_emotion_class(emotion_class)
-
 
         features = {}
         features["spec"] = spec
