@@ -3,6 +3,43 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sys
 
+# 어차피 Convolution으로 갈아껴야 함
+class SER_Tail(nn.Module):
+    '''Playing as SER '''
+
+    def __init__(self, input_len, use_drop, use_sigmoid):
+        super(SER_Tail, self).__init__()
+
+        self.hidden1 = nn.Linear(input_len, 128)
+        self.hidden2 = nn.Linear(128, 128)
+        self.output = nn.Linear(128, 64) # embedding size를 64로 맞추기 위함
+        self.use_drop = use_drop
+        self.use_sigmoid = use_sigmoid
+        if (self.use_drop):
+            self.drop = nn.Dropout(p=0.5)
+
+    def forward(self, x):
+
+        if (self.use_sigmoid):
+            x = torch.sigmoid(self.hidden1(x))
+        else:
+            x = self.hidden1(x)
+
+        if (self.use_sigmoid):
+            x = torch.sigmoid(self.hidden2(x))
+        else:
+            x = self.hidden2(x)
+
+        if (self.use_drop):
+            x = self.drop(x)
+
+        if (self.use_sigmoid):
+            result = torch.sigmoid(self.output(x))
+        else:
+            result = self.output(x)
+
+        return result
+
 class LinearNorm(torch.nn.Module):
     def __init__(self, in_dim, out_dim, bias=True, w_init_gain='linear'):
         super(LinearNorm, self).__init__()

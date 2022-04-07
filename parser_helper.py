@@ -75,8 +75,8 @@ def get_training_config():
     parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
 
     # Bottleneck configuration
-    parser.add_argument("-dim_neck", type=int, default=32)
-    parser.add_argument("--freq", type=int, default=16)
+    parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
+    parser.add_argument("--freq", type=int, default=16, help="Bottleneck parameter of f : sampling frequency")
 
 
     # Input spectrogram configuration
