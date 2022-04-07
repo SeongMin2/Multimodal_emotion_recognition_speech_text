@@ -112,8 +112,31 @@ class Cross_attention(nn.Module):
         # key: [batch_size, key_len, hidden_dim]
         # value: [batch_size, value_len, hidden_dim]
 
-        Q = self.fc_q(query)
-        K = self.fc_k(key)
-        V = self.fc_v(value)
+        attention_head = []
+        for i in range(self.n_heads):
+            Query = self.fc_q[i](query)
+            Key = self.fc_q[i](key)
+            Value = self.fc_q[i](value)
 
+            # Query: [batch_size, query_len, hidden_dim]
+            # Key: [batch_size, key_len, hidden_dim]
+            # Value: [batch_size, value_len, hidden_dim]
 
+            alpha = torch.matmul(Query, Key.transpose(2,3)) / self.scale
+            # energy = torch.matmul(Q, K.permute(0, 1, 3, 2)) / self.scale
+
+            if mask is not None:
+                alpha = alpha.masked_fill(mask == 0, -1e9)
+
+            alpha = alpha / torch.sqrt(torch.Tensor([self.hidden_dim]))
+
+            attn = torch.softmax(alpha, dim=-1)
+
+            attn = self.dropout(attn)
+
+            if i == 0:
+                attention_head = torch.matmul(attn, Value)
+            else:
+                attention_head = torch.cat((attention_head), dim=-1)
+
+        return attention_head
