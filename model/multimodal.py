@@ -37,19 +37,25 @@ class Multimodal(nn.Module):
 
         self.decoder = get_Decoder(config)
 
+        self.ser_tail = get_SER_Tail(config)
+
         self.txt_model = get_TER(config)
 
         self.speech_input = config.speech_input
 
     def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
-
-        if self.speech_input == "spec":
-            input = spec
-        elif self.speech_input == "wav2vec":
-            input = wav2vec_feat
-
         encoder_output = self.encoder(spec, spk_emb, wav2vec_feat)
         
+        phone_feat = self.phone_encoder(phones)
+        
+        # decoder input 넣기 전에 upsampling이랑 concatenation 하고 넣어야함
+
+        ser_feat = self.ser_tail(encoder_output)
+        
+        ter_feat = self.txt_model(txt_feat)
+        
+        
+
 
 
 
