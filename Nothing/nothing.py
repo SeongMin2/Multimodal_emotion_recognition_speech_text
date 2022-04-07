@@ -1,6 +1,7 @@
 import os
-#import torch
-#import torch.nn as nn
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 #import torch.nn.functional as F
 #import torchtext
 #from torchtext import data, datasets
@@ -8,13 +9,34 @@ import random
 import numpy as np
 #from pathlib import Path
 
-
-# def check_tokenizer_length():
-str = "hoell -- Heifm, faiejw IOQ"
-str_pre = str.lower()
-
+a = torch.rand(3,4,5)
+b = a.sum(dim=1)
+k = torch.cat((a,a), dim=2)
 pass
+'''
+a = torch.rand(3,5)
+c = a.sum(dim=1)
 
+b = nn.Linear(5,1)
+r = b(a)
+r2 = F.softmax(r, dim=0)
+r3 = a* r2
+
+alpha = torch.rand(2,3)
+
+alpha = torch.tensor(alpha)
+sm_reult = F.softmax(alpha,dim=1)
+
+
+input = torch.zeros(2,4)
+
+input = input + 2
+
+result = alpha * input
+
+layer1 = nn.Linear(5,6)
+output = layer1(input)
+'''
 '''
 a = [[1,2],[2,3]]
 b = [[4,3], [4,5]]
