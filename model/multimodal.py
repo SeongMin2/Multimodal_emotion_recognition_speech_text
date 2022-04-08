@@ -32,8 +32,23 @@ def get_Phone_Encoder(config):
 def get_TER(config):
     return models.TxtModel(config)
 
+def get_Classifier(config):
+    return models.Classifier(config)
+
 def get_Cross_attention(config):
     return attention.Cross_attention(config)
+
+def duplicate_n_heads_times(n_heads, feat):
+    output = []
+
+    # Duplicate original features by n_heads times
+    for i in range(n_heads):
+        if i == 0:
+            output = feat
+        else:
+            output = torch.cat((output, feat), dim=-1)
+    return output
+
 
 class Multimodal(nn.Module):
     def __init__(self, config):
@@ -48,12 +63,29 @@ class Multimodal(nn.Module):
 
         self.txt_model = get_TER(config)
 
-        self.cross_attention = get_Cross_attention(config)
+        #self.classifier = get_Classifier(config, )
+
+        self.cross_attn_s_md = get_Cross_attention(config)
+        self.cross_attn_t_md = get_Cross_attention(config)
+
+        # Layernorm은 default로 trainable 함 그래서 모두 따로 정의해줌
+        self.layer_norm_s = nn.LayerNorm(config.attention_emb * config.n_heads)
+        self.layer_norm_t = nn.LayerNorm(config.attention_emb * config.n_heads)
+        self.post_layer_norm_s = nn.LayerNorm(config.attention_emb * config.n_heads)
+        self.post_layer_norm_t = nn.LayerNorm(config.attention_emb * config.n_heads)
+
+        self.ff_s = nn.Linear(config.attention_emb * config.n_heads, config.attention_emb * config.n_heads)
+        self.ff_t = nn.Linear(config.attention_emb * config.n_heads, config.attention_emb * config.n_heads)
+
+        self.glob_avg_pool_s = nn.AvgPool1d(kernel_size = config.len_crop , stride = config.len_crop)
+        self.glob_avg_pool_t = nn.AvgPool1d(kernel_size = config.max_token_len, stride=config.max_token_len)
 
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
         self.freq = config.freq
         self.len_crop = config.len_crop
+        self.n_heads = config.n_heads
+        self.batch_size = config.batch_size
 
     def forward(self, spec, spk_emb, spk_emb_dc ,phones, wav2vec_feat, txt_feat):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
@@ -110,7 +142,7 @@ class Multimodal(nn.Module):
         # spec : (batch, 96, 80)
 
         post_output = self.post_net(decoder_output.transpose(1,2))
-        # post_output : (batch, 80, 96 )
+        # post_output : (batch, 80, 96)
 
         ser_feat = self.ser_tail(encoder_outputs)
         
@@ -119,11 +151,23 @@ class Multimodal(nn.Module):
         ser_feat = ser_feat.transpose(1,2)
         ter_feat = ter_feat.transpose(1,2)
 
-        cross_attn1 = self.cross_attention(ser_feat, ter_feat, ter_feat)
+        cross_attn_s = self.cross_attn_s_md(ser_feat, ter_feat, ter_feat)
+        cross_attn_t = self.cross_attn_t_md(ter_feat, ser_feat, ser_feat)
+        # cross_attn2 : (batch, 122, 1024)
 
-        cross_attn2 = self.cross_attention(ter_feat, ser_feat, ser_feat)
+        src_s = self.layer_norm_s(duplicate_n_heads_times(self.n_heads, ser_feat) + cross_attn_s)
+        src_t = self.layer_norm_t(duplicate_n_heads_times(self.n_heads, ter_feat) + cross_attn_t)
+        # src2 : (batch, 122, 1024)
 
-        # cross_attn 값들을 각각 nn.Linear로 한 번 더 거치고 나서 concatenation 하고 내보내자
+        src_s = self.post_layer_norm_s(src_s + self.ff_s(src_s))
+        src_t = self.post_layer_norm_t(src_t + self.ff_t(src_t))
+
+        src_s = self.glob_avg_pool_s(src_s.transpose(1,2))
+        src_t = self.glob_avg_pool_t(src_t.transpose(1,2))
+
+        src = torch.cat((src_s.view(self.batch_size, -1), src_t.view(self.batch_size, -1)), dim=-1)
+        # 이후로 classifier 들어가면 됨
+
 
         output = 1
 

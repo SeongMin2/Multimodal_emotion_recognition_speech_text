@@ -34,6 +34,7 @@ class SpeechTextDataset(Dataset):
         self.transforms = apply_wav2vec # 일단 default로 wav2vec2.0 transform으로 해둠 (일단은)
         self.sample_rate = sample_rate
         self._load_wav = load_wav
+        self.max_token_len = config.max_token_len
 
         assert self.mode == "train" or "test", "mode should be 'train' or 'test'."
 
@@ -214,7 +215,7 @@ class SpeechTextDataset(Dataset):
 
     def _parse_transcript(self, transcript: str) -> list:
 
-        feature = extract_features(transcript, self.tokenizer, self.text_model)
+        feature = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
 
         return feature
 

@@ -97,8 +97,10 @@ def get_training_config():
     parser.add_argument("--dim_pre", type=int, default=512, help="Length of first LSTM module in Decoder")
 
     parser.add_argument("--txt_feat_model", type=str, default="bert-base-uncased", help='Text model for feature extraction')
+    parser.add_argument("--max_token_len", type=int, default=124, help="max text sequence length")
 
     parser.add_argument("--selected_catg", type=list, default=["hap", "exc", "ang", "sad", "neu"], help="Limit categories")
+    parser.add_argument("--n_classes", type=int , default=4, help="Number of classes(categories)")
 
 
     parser_config = parser.parse_args()

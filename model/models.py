@@ -13,19 +13,19 @@ class SERTail(nn.Module):
 
         self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
                                      kernel_size=1, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
         self.conv2 = torch.nn.Conv1d(256, 256,
                                      kernel_size=1, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
         self.conv3 = torch.nn.Conv1d(256, 128,
                                      kernel_size=8, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
         self.conv4 = torch.nn.Conv1d(128, last_output_channel,
                                      kernel_size=4, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
     def forward(self, x):
         x = x.transpose(1, 2)
@@ -339,19 +339,19 @@ class TxtModel(nn.Module):
 
         self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
                                      kernel_size=1, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
         self.conv2 = torch.nn.Conv1d(256, 256,
                                      kernel_size=1, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
         self.conv3 = torch.nn.Conv1d(256, 128,
                                      kernel_size=8, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
         self.conv4 = torch.nn.Conv1d(128, last_output_channel,
                                      kernel_size=4, stride=1,
-                                     padding=1, dilation=1,
+                                     padding="same", dilation=1,
                                      bias=True)
 
         # self.mean_pool = nn.AvgPool1d(118)
@@ -373,3 +373,22 @@ class TxtModel(nn.Module):
         '''
 
         return x  # shape : (batch, 128, 122)
+
+class Classifier(nn.Module):
+    def __init__(self, config, input_len):
+        super(Classifier, self).__init__()
+
+        n_classes = config.n_classes
+
+        self.hidden1 = nn.Linear(input_len, 128)
+        self.hidden2 = nn.Linear(128, 128)
+        self.hidden3 = nn.Linear(128, 64)
+        self.hidden4 = nn.Linear(64, n_classes)
+
+    def forward(self, x):
+        x = F.relu(self.hidden1(x))
+        x = F.relu(self.hidden2(x))
+        x = F.relu(self.hidden3(x))
+
+
+
