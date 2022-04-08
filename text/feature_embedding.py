@@ -16,7 +16,7 @@ def extract_features(text, tokenizer, text_model):
     semantic_feat = output.last_hidden_state
 
 
-    return semantic_feat.detach()
+    return semantic_feat.detach().numpy()[0]
 
 
 

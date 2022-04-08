@@ -8,6 +8,13 @@ import torch.nn.functional as F
 import random
 import numpy as np
 #from pathlib import Path
+from transformers import AutoModel, AutoTokenizer, AutoConfig
+
+# text_model = AutoModel.from_pretrained("bert-base-uncased")
+config = AutoConfig.from_pretrained("bert-base-uncased")
+
+
+
 
 a = torch.rand(3,4,5)
 b = a.sum(dim=1)

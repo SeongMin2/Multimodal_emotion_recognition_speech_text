@@ -99,7 +99,7 @@ class Cross_attention(nn.Module):
         '''
 
         self.fc_q = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_heads)])
-        self.fc_k = nn.ModuelList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_heads)])
+        self.fc_k = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_heads)])
         self.fc_v = nn.ModuleList([nn.Linear(self.hidden_dim, self.hidden_dim) for i in range(self.n_heads)])
 
         self.dropout = nn.Dropout(self.dropout_ratio)

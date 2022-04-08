@@ -28,7 +28,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     train_loader = data.DataLoader(dataset=train_dataset,
                                    batch_size=batch_size,
                                    shuffle=True,
-                                   num_workers=num_workers,
+                                   # num_workers=num_workers,
                                    drop_last=True,
                                    worker_init_fn=worker_init_fn,
                                    pin_memory=True)
@@ -38,7 +38,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     test_loader = data.DataLoader(dataset=test_dataset,
                                   batch_size=1,
                                   shuffle=False,
-                                  num_workers=num_workers,
+                                  # num_workers=num_workers,
                                   drop_last=False,
                                   worker_init_fn=worker_init_fn,
                                   pin_memory=True)
@@ -48,7 +48,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     train_eval = data.DataLoader(dataset=train_eval_dataset,
                                  batch_size=1,
                                  shuffle=False,
-                                 num_workers=num_workers,
+                                 # num_workers=num_workers,
                                  drop_last=False,
                                  worker_init_fn=worker_init_fn,
                                  pin_memory=True)
@@ -58,13 +58,43 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     train_1batch = data.DataLoader(dataset=train_dataset,
                                    batch_size=1,
                                    shuffle=False,
-                                   num_workers=num_workers,
+                                   # num_workers=num_workers,
                                    drop_last=False,
                                    worker_init_fn=worker_init_fn,
                                    pin_memory=True)
 
     return train_loader, test_loader, train_eval, train_1batch
 
+
+def get_train_data_loaders(config, train_npz, num_workers=4):
+
+    train_dir = config.train_dir
+    wav_dir = config.wav_dir
+    batch_size = config.batch_size
+
+    train_dataset = SpeechTextDataset(config,"train",train_dir, wav_dir, train_npz, 16000)
+
+    worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
+    train_loader = DataLoader(dataset=train_dataset,
+                              batch_size = batch_size,
+                              shuffle=True,
+                              # num_workers = num_workers, # num_workers를 추가하면 iter()이 못읽음 ...
+                              worker_init_fn=worker_init_fn,
+                              drop_last=True
+                              )
+
+    '''
+    worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
+    train_loader = data.DataLoader(dataset=train_dataset,
+                                   batch_size=batch_size,
+                                   shuffle=True,
+                                   num_workers=num_workers,
+                                   drop_last=True,
+                                   worker_init_fn=worker_init_fn,
+                                   pin_memory=True)
+    '''
+
+    return train_loader
 
 
 

@@ -108,7 +108,7 @@ class SpeechTextDataset(Dataset):
             # return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"], features["wav2vec_feat"]
             # spectrum, emb_org, phone, emotion_label, wav2vec_feature
         elif gt_config["speech_input"] == "spec":
-            return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"]
+            return {features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"]}
 
 
     def zero_pad(self, array, len_pad):
@@ -190,7 +190,7 @@ class SpeechTextDataset(Dataset):
             emotion_class = 3
         return emotion_class
 
-    def _parse_wav(self, wav_path: str) -> Tensor:
+    def _parse_wav(self, wav_path: str):
 
         signal = self._load_wav(wav_path, sample_rate=self.sample_rate)
 
@@ -199,6 +199,8 @@ class SpeechTextDataset(Dataset):
             return torch.zeros(1000, self.num_mels)
 
         feature = self.transforms(signal, self.sample_rate)  # 여기에 wav2vec feature 추출하도록
+
+        feature = np.array(feature) # list를 numpy로 한 번 바꿔주고 이를 tensor로 바꿈
 
         # normalization인데 선택적으로 할 수 있게 하는게 좋을듯 음...
         '''

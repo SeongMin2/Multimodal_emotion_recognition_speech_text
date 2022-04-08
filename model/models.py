@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sys
+from transformers import AutoConfig
 
 # 어차피 Convolution으로 갈아껴야 함
 class SER_Tail(nn.Module):
@@ -295,10 +296,12 @@ class Postnet(nn.Module):
 class TxtModel(nn.Module):
     """ Text model """
 
-    def __init__(self):
+    def __init__(self, config):
         super(TxtModel, self).__init__()
+    
+        first_input_channel = AutoConfig.from_pretrained(config.txt_feat_model).hidden_size
 
-        self.conv1 = torch.nn.Conv1d(1024, 256,
+        self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
                                      kernel_size=1, stride=1,
                                      padding=1, dilation=1,
                                      bias=True)

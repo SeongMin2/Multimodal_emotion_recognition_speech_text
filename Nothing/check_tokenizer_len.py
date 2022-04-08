@@ -19,6 +19,8 @@ tables = glob.glob(table_dir + "/" + "*.csv")
 
 tokenizer = AutoTokenizer.from_pretrained(txt_model)
 
+# encoded_input = tokenizer(["Excuse me","my name is doctor"], padding="max_length", max_length=124, return_tensors = "pt")
+
 max_token_length = 0
 
 emotions = ["hap", "exc", "sad", "ang", "neu"]

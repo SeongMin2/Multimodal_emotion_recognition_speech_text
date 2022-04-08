@@ -34,7 +34,7 @@ def get_Cross_attention(config):
 
 class Multimodal(nn.Module):
     def __init__(self, config):
-        super(Multimodal).__init__()
+        super(Multimodal, self).__init__()
 
         self.encoder = get_Encoder(config)
         self.ser_tail = get_SER_Tail(config)
@@ -48,9 +48,12 @@ class Multimodal(nn.Module):
         self.cross_attention = get_Cross_attention(config)
 
         self.speech_input = config.speech_input
+        self.dim_neck = config.dim_neck
+        self.freq = config.freq
 
     def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
+        # encoder_outputs : (batch, 96, 2*d)
 
         ##########################################
         #              Down-Sampling             #
