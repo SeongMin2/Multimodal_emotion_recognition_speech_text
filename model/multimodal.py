@@ -116,6 +116,9 @@ class Multimodal(nn.Module):
         
         ter_feat = self.txt_model(txt_feat)
 
+        ser_feat = ser_feat.transpose(1,2)
+        ter_feat = ter_feat.transpose(1,2)
+
         cross_attn1 = self.cross_attention(ser_feat, ter_feat, ter_feat)
 
         cross_attn2 = self.cross_attention(ter_feat, ser_feat, ser_feat)

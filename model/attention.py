@@ -123,7 +123,7 @@ class Cross_attention(nn.Module):
             # Key: [batch_size, key_len, hidden_dim]
             # Value: [batch_size, value_len, hidden_dim]
 
-            alpha = torch.matmul(Query, Key.transpose(2,3)) / self.scale
+            alpha = torch.matmul(Query, Key.transpose(1,2)) / self.scale
             # energy = torch.matmul(Q, K.permute(0, 1, 3, 2)) / self.scale
 
             if mask is not None:
@@ -138,6 +138,6 @@ class Cross_attention(nn.Module):
             if i == 0:
                 attention_head = torch.matmul(attn, Value)
             else:
-                attention_head = torch.cat((attention_head), dim=-1)
+                attention_head = torch.cat((attention_head, torch.matmul(attn, Value)), dim=-1)
 
         return attention_head
