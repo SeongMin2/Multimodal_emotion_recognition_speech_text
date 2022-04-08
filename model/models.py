@@ -152,16 +152,7 @@ class Encoder(torch.nn.Module):
         self.lstm.flatten_parameters()
         outputs, _ = self.lstm(speech)
 
-        # downsampling
-        codes = []
-        out_forward = outputs[:, :, :self.dim_neck]
-        out_backward = outputs[:, :, self.dim_neck:]
-
-        # downsample
-        for i in range(0, outputs.size(1), self.freq):
-            codes.append(torch.cat((out_forward[:, i + self.freq - 1, :], out_backward[:, i, :]), dim=-1))
-
-        return codes
+        return outputs
 
 
 class PhoneEncoder(nn.Module):

@@ -73,6 +73,9 @@ def get_training_config():
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
 
     parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
+    parser.add_argument("--dropout_ratio", type=float, default= 0.2, help="Ratio of dropout")
+    parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
+    parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
 
     # Bottleneck configuration
     parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
