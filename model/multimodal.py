@@ -5,12 +5,15 @@ import model.models as models
 import model.attention as attention
 
 def get_SER_Tail(config):
+    return models.SERTail(config)
+
+def get_SER_Tail_origin(config):
     input_len = 2 * config.dim_neck
     use_sigmoid = False
 
-    ser_tail_model = models.SER_Tail(input_len=input_len,
-                               use_drop=True,
-                               use_sigmoid = use_sigmoid)
+    ser_tail_model = models.SER_Tail_origin(input_len=input_len,
+                                     use_drop=True,
+                                     use_sigmoid = use_sigmoid)
 
     return ser_tail_model
 
@@ -121,7 +124,7 @@ class Multimodal(nn.Module):
 
         output = 1
 
-        return 1
+        return decoder_output, post_output.transpose(1,2)
 
 
         

@@ -4,12 +4,48 @@ import torch.nn.functional as F
 import sys
 from transformers import AutoConfig
 
+class SERTail(nn.Module):
+    def __init__(self, config):
+        super(SERTail, self).__init__()
+
+        first_input_channel = int(config.dim_neck * 2)
+        last_output_channel = config.attention_emb
+
+        self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
+                                     kernel_size=1, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+        self.conv2 = torch.nn.Conv1d(256, 256,
+                                     kernel_size=1, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+        self.conv3 = torch.nn.Conv1d(256, 128,
+                                     kernel_size=8, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+        self.conv4 = torch.nn.Conv1d(128, last_output_channel,
+                                     kernel_size=4, stride=1,
+                                     padding=1, dilation=1,
+                                     bias=True)
+    def forward(self, x):
+        x = x.transpose(1, 2)
+
+        x = F.relu(self.conv1(x)) # (batch, 256, 98)
+        x = F.relu(self.conv2(x)) # (batch, 256, 100)
+        x = F.relu(self.conv3(x)) # (batch, 128, 95)
+        x = F.relu(self.conv4(x)) # (batch, 128, 94)
+
+        return x
+
+
+
+
 # 어차피 Convolution으로 갈아껴야 함
-class SER_Tail(nn.Module):
+class SER_Tail_origin(nn.Module):
     '''Playing as SER '''
 
     def __init__(self, input_len, use_drop, use_sigmoid):
-        super(SER_Tail, self).__init__()
+        super(SER_Tail_origin, self).__init__()
 
         self.hidden1 = nn.Linear(input_len, 128)
         self.hidden2 = nn.Linear(128, 128)
@@ -295,11 +331,11 @@ class Postnet(nn.Module):
 
 class TxtModel(nn.Module):
     """ Text model """
-
     def __init__(self, config):
         super(TxtModel, self).__init__()
     
         first_input_channel = AutoConfig.from_pretrained(config.txt_feat_model).hidden_size
+        last_output_channel = config.attention_emb
 
         self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
                                      kernel_size=1, stride=1,
@@ -313,14 +349,14 @@ class TxtModel(nn.Module):
                                      kernel_size=8, stride=1,
                                      padding=1, dilation=1,
                                      bias=True)
-        self.conv4 = torch.nn.Conv1d(128, 64,
+        self.conv4 = torch.nn.Conv1d(128, last_output_channel,
                                      kernel_size=4, stride=1,
                                      padding=1, dilation=1,
                                      bias=True)
 
-        self.mean_pool = nn.AvgPool1d(118)
+        # self.mean_pool = nn.AvgPool1d(118)
 
-        self.fc = nn.Linear(64, 4)
+        # self.fc = nn.Linear(64, 4)
 
     def forward(self, x):
         x = x.transpose(1, 2)
@@ -330,7 +366,10 @@ class TxtModel(nn.Module):
         x = F.relu(self.conv3(x))
         x = F.relu(self.conv4(x))
 
+        '''
         x = self.mean_pool(x)
         x = x.view(x.shape[0], x.shape[1])
         x = torch.sigmoid(self.fc(x))
-        return x
+        '''
+
+        return x  # shape : (batch, 128, 122)
