@@ -50,10 +50,16 @@ class Multimodal(nn.Module):
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
         self.freq = config.freq
+        self.len_crop = config.len_crop
 
-    def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
+    def forward(self, spec, spk_emb, spk_emb_dc ,phones, wav2vec_feat, txt_feat):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
         # encoder_outputs : (batch, 96, 2*d)
+
+        # for inference
+        if spk_emb_dc is None:
+            # return codes and logits
+            return 1 # 여기에 이제 ser_tail 지나고 cross attention 지나고 나온것이 나와야 겠네
 
         ##########################################
         #              Down-Sampling             #
@@ -67,8 +73,17 @@ class Multimodal(nn.Module):
         # downsample
         for i in range(0, encoder_outputs.size(1), self.freq):
             codes.append(torch.cat((out_forward[:, i + self.freq - 1, :], out_backward[:, i, :]), dim=-1))
-
-        down_sampled = codes
+            
+        '''
+        # 아놔 이거 필요 없네 ㅎ
+        down_sampled = []
+        for i, code in enumerate(codes):
+            code = torch.unsqueeze(code, 1)
+            if i == 0:
+                down_sampled = code
+            else:
+                down_sampled = torch.cat((down_sampled, code), dim=1)
+        '''
 
         ##########################################
         #              Up-Sampling               #
@@ -79,18 +94,22 @@ class Multimodal(nn.Module):
         for code in codes:
             tmp.append(code.unsqueeze(1).expand(-1,int(spec.size(1)/len(codes)),-1))
         up_sampled = torch.cat(tmp, dim=1)
+        # up_sampled : (batch, 96, 16)
 
         phone_feat = self.phone_encoder(phones)
+        # phone_feat : (batch, 96, 256)
 
-        decoder_input = torch.cat((up_sampled, spk_emb.unsqueeze(1).expand(-1,spec.size(1),-1), phone_feat), dim=-1)
-        
-        # decoder input 넣기 전에 upsampling이랑 concatenation 하고 넣어야함
+        decoder_input = torch.cat((up_sampled, spk_emb_dc.unsqueeze(1).expand(-1,spec.size(1),-1), phone_feat), dim=-1)
+        # decoder_input : (batch, 96, 512 + 2*d)
 
         decoder_output = self.decoder(decoder_input)
+        # decoder_output : (batch, 96, 80)
+        # spec : (batch, 96, 80)
 
-        post_output = self.post_net(decoder_output)
+        post_output = self.post_net(decoder_output.transpose(1,2))
+        # post_output : (batch, 80, 96 )
 
-        ser_feat = self.ser_tail(up_sampled)
+        ser_feat = self.ser_tail(encoder_outputs)
         
         ter_feat = self.txt_model(txt_feat)
 

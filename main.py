@@ -25,7 +25,7 @@ def model_check(model, train_loader):
     #                 "wav2vec_feat": features["wav2vec_feat"], # (batch, 25, 96, 1024)
     #                 "txt_feat" : features["txt_feat"]  # (batch, 124, 768(or 1024) )
     #             }
-    result = model(feat['spec'], feat['spk_emb'], feat['phones'], feat['wav2vec_feat'], feat['txt_feat'])
+    result = model(feat['spec'], feat['spk_emb'], feat['spk_emb'], feat['phones'], feat['wav2vec_feat'], feat['txt_feat'])
     # def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
 
 

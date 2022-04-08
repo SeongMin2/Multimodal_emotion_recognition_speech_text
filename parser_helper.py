@@ -79,7 +79,7 @@ def get_training_config():
 
     # Bottleneck configuration
     parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
-    parser.add_argument("--freq", type=int, default=16, help="Bottleneck parameter of f : sampling frequency")
+    parser.add_argument("--freq", type=int, default=48, help="Bottleneck parameter of f : sampling frequency")
 
 
     # Input spectrogram configuration
