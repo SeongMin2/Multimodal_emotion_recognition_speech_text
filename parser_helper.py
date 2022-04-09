@@ -76,6 +76,7 @@ def get_training_config():
     parser.add_argument("--dropout_ratio", type=float, default= 0.2, help="Ratio of dropout")
     parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
+    parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
 
     # Bottleneck configuration
     parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
@@ -101,6 +102,8 @@ def get_training_config():
 
     parser.add_argument("--selected_catg", type=list, default=["hap", "exc", "ang", "sad", "neu"], help="Limit categories")
     parser.add_argument("--n_classes", type=int , default=4, help="Number of classes(categories)")
+
+    parser.add_argument("--pretrained_model", type=str, default=None, help="Path of pretrained model")
 
 
     parser_config = parser.parse_args()
