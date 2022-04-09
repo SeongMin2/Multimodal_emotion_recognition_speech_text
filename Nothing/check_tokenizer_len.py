@@ -12,7 +12,7 @@ def preprocess_text(text):
     return text
 
 ABS_PATH = ABS_PATH
-txt_model = "bert-base-uncased"  
+txt_model = "bert-large-uncased"
 table_dir = ABS_PATH + "/full_data/table"
 
 tables = glob.glob(table_dir + "/" + "*.csv")

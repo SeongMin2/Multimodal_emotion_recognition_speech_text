@@ -12,8 +12,9 @@ from transformers import AutoModel, AutoTokenizer, AutoConfig
 
 
 # text_model = AutoModel.from_pretrained("bert-base-uncased")
-config = AutoConfig.from_pretrained("bert-base-uncased")
-
+# config = AutoConfig.from_pretrained("bert-base-uncased")
+tokenizer = AutoTokenizer.from_pretrained("bert-large-uncased")
+encoded_input = tokenizer("hello who are you", padding="max_length", max_length=10, return_tensors='pt')
 
 
 
