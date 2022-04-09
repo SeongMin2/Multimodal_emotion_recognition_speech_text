@@ -111,6 +111,7 @@ class Multimodal(nn.Module):
             
         '''
         # 아놔 이거 필요 없네 ㅎ
+        # 이거는 그냥 그 codes에서 나온거를 다시 하나의 tensor로 온전하게 만드는것이었음
         down_sampled = []
         for i, code in enumerate(codes):
             code = torch.unsqueeze(code, 1)
@@ -168,7 +169,10 @@ class Multimodal(nn.Module):
         src = torch.cat((src_s.view(self.batch_size, -1), src_t.view(self.batch_size, -1)), dim=-1)
         # 이후로 classifier 들어가면 됨
 
-        return decoder_output, post_output.transpose(1,2)
+        output = self.classifier(src)
+
+
+        return decoder_output, post_output.transpose(1,2), output
 
 
         

@@ -382,7 +382,7 @@ class Classifier(nn.Module):
         input_dim = config.attention_emb * 2
 
         self.hidden1 = nn.Linear(input_dim, 128)
-        self.hidden2 = nn.Linear(128, 64)
+        self.hidden2 = nn.Linear(128, 64) # output_dim을 64로 할까 128로 할까
         self.hidden3 = nn.Linear(64, n_classes)
 
         self.dropout = nn.Dropout(config.dropout_ratio)
@@ -391,7 +391,7 @@ class Classifier(nn.Module):
         x = F.relu(self.hidden1(x))
         x = self.dropout(F.relu(self.hidden2(x)))
         x = F.relu(self.hidden3(x))
-        x = torch.softmax(x)
+        x = torch.softmax(x, dim=-1)
 
         return x
 
