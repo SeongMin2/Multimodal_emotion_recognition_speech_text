@@ -63,19 +63,19 @@ class Multimodal(nn.Module):
 
         self.txt_model = get_TER(config)
 
-        #self.classifier = get_Classifier(config, )
+        self.classifier = get_Classifier(config)
 
         self.cross_attn_s_md = get_Cross_attention(config)
         self.cross_attn_t_md = get_Cross_attention(config)
 
         # Layernorm은 default로 trainable 함 그래서 모두 따로 정의해줌
-        self.layer_norm_s = nn.LayerNorm(config.attention_emb * config.n_heads)
-        self.layer_norm_t = nn.LayerNorm(config.attention_emb * config.n_heads)
-        self.post_layer_norm_s = nn.LayerNorm(config.attention_emb * config.n_heads)
-        self.post_layer_norm_t = nn.LayerNorm(config.attention_emb * config.n_heads)
+        self.layer_norm_s = nn.LayerNorm(config.attention_emb)
+        self.layer_norm_t = nn.LayerNorm(config.attention_emb)
+        self.post_layer_norm_s = nn.LayerNorm(config.attention_emb)
+        self.post_layer_norm_t = nn.LayerNorm(config.attention_emb)
 
-        self.ff_s = nn.Linear(config.attention_emb * config.n_heads, config.attention_emb * config.n_heads)
-        self.ff_t = nn.Linear(config.attention_emb * config.n_heads, config.attention_emb * config.n_heads)
+        self.ff_s = nn.Linear(config.attention_emb, config.attention_emb)
+        self.ff_t = nn.Linear(config.attention_emb, config.attention_emb)
 
         self.glob_avg_pool_s = nn.AvgPool1d(kernel_size = config.len_crop , stride = config.len_crop)
         self.glob_avg_pool_t = nn.AvgPool1d(kernel_size = config.max_token_len, stride=config.max_token_len)
@@ -153,11 +153,11 @@ class Multimodal(nn.Module):
 
         cross_attn_s = self.cross_attn_s_md(ser_feat, ter_feat, ter_feat)
         cross_attn_t = self.cross_attn_t_md(ter_feat, ser_feat, ser_feat)
-        # cross_attn2 : (batch, 122, 1024)
+        # cross_attn2 : (batch, 122, 128)
 
-        src_s = self.layer_norm_s(duplicate_n_heads_times(self.n_heads, ser_feat) + cross_attn_s)
-        src_t = self.layer_norm_t(duplicate_n_heads_times(self.n_heads, ter_feat) + cross_attn_t)
-        # src2 : (batch, 122, 1024)
+        src_s = self.layer_norm_s(ser_feat + cross_attn_s)
+        src_t = self.layer_norm_t(ter_feat + cross_attn_t)
+        # src2 : (batch, 122, 128)
 
         src_s = self.post_layer_norm_s(src_s + self.ff_s(src_s))
         src_t = self.post_layer_norm_t(src_t + self.ff_t(src_t))
@@ -167,9 +167,6 @@ class Multimodal(nn.Module):
 
         src = torch.cat((src_s.view(self.batch_size, -1), src_t.view(self.batch_size, -1)), dim=-1)
         # 이후로 classifier 들어가면 됨
-
-
-        output = 1
 
         return decoder_output, post_output.transpose(1,2)
 

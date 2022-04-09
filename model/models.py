@@ -375,20 +375,26 @@ class TxtModel(nn.Module):
         return x  # shape : (batch, 128, 122)
 
 class Classifier(nn.Module):
-    def __init__(self, config, input_len):
+    def __init__(self, config):
         super(Classifier, self).__init__()
 
         n_classes = config.n_classes
+        input_dim = config.attention_emb * 2
 
-        self.hidden1 = nn.Linear(input_len, 128)
-        self.hidden2 = nn.Linear(128, 128)
-        self.hidden3 = nn.Linear(128, 64)
-        self.hidden4 = nn.Linear(64, n_classes)
+        self.hidden1 = nn.Linear(input_dim, 128)
+        self.hidden2 = nn.Linear(128, 64)
+        self.hidden3 = nn.Linear(64, n_classes)
+
+        self.dropout = nn.Dropout(config.dropout_ratio)
 
     def forward(self, x):
         x = F.relu(self.hidden1(x))
-        x = F.relu(self.hidden2(x))
+        x = self.dropout(F.relu(self.hidden2(x)))
         x = F.relu(self.hidden3(x))
+        x = torch.softmax(x)
+
+        return x
+
 
 
 

@@ -10,6 +10,7 @@ import numpy as np
 #from pathlib import Path
 from transformers import AutoModel, AutoTokenizer, AutoConfig
 
+
 # text_model = AutoModel.from_pretrained("bert-base-uncased")
 config = AutoConfig.from_pretrained("bert-base-uncased")
 
