@@ -139,7 +139,7 @@ class Multimodal(nn.Module):
         # decoder_input : (batch, 96, 512 + 2*d)
 
         decoder_output = self.decoder(decoder_input)
-        # decoder_output : (batch, 96, 80)
+        # spec_logits : (batch, 96, 80)
         # spec : (batch, 96, 80)
 
         post_output = self.post_net(decoder_output.transpose(1,2))
@@ -170,7 +170,6 @@ class Multimodal(nn.Module):
         # 이후로 classifier 들어가면 됨
 
         output = self.classifier(src)
-
 
         return decoder_output, post_output.transpose(1,2), output
 

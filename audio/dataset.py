@@ -101,16 +101,20 @@ class SpeechTextDataset(Dataset):
                 "spec": features["spec"],
                 "spk_emb": features["spk_emb"],
                 "phones": features["phones"],
+                "txt_feat" : features["txt_feat"],
                 "emotion_lb": features["emotion_lb"],
-                "text": features["text"],
-                "wav2vec_feat": features["wav2vec_feat"],
-                "txt_feat" : features["txt_feat"]
+                "wav2vec_feat": features["wav2vec_feat"]
             }
             # return features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"], features["wav2vec_feat"]
             # spectrum, emb_org, phone, emotion_label, wav2vec_feature
         elif gt_config["speech_input"] == "spec":
-            return {features["spec"], features["spk_emb"], features["phones"], features["emotion_lb"], features["text"]}
-
+            return {
+                "spec": features["spec"],
+                "spk_emb": features["spk_emb"],
+                "phones": features["phones"],
+                "txt_feat" : features["txt_feat"],
+                "emotion_lb": features["emotion_lb"]
+            }
 
     def zero_pad(self, array, len_pad):
         """ Zero pads a 2d array with zeros to the right """

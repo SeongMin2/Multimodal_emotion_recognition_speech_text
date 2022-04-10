@@ -11,6 +11,18 @@ import numpy as np
 from transformers import AutoModel, AutoTokenizer, AutoConfig
 
 
+
+
+def calc_UA(logit, ground_truth):
+    max_vals, max_indices = torch.max(logit, 1)
+    tmp = (max_indices == ground_truth)
+    ua = (max_indices == ground_truth).sum().data.cpu().numpy() / max_indices.size()[0]
+
+    return ua
+logit = torch.tensor([[1,0,0,0],[0,1,0,0]])
+ground_truth = torch.tensor([0,3])
+ua = calc_UA(logit, ground_truth)
+
 # text_model = AutoModel.from_pretrained("bert-base-uncased")
 # config = AutoConfig.from_pretrained("bert-base-uncased")
 tokenizer = AutoTokenizer.from_pretrained("bert-large-uncased")

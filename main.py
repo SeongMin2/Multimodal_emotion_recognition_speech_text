@@ -16,14 +16,14 @@ test_npz = "test"
 def model_check(model, train_loader):
     data_iter = iter(train_loader)
     feat = next(data_iter)
-    # {
-    #                 "spec": features["spec"],   # (batch,96,80)
-    #                 "spk_emb": features["spk_emb"], # (batch, 256)
-    #                 "phones": features["phones"],   # (batch, 96, 128)
-    #                 "emotion_lb": features["emotion_lb"], # (batch)
-    #                 "text": features["text"],          # 이 친구는 list len은 batch 수
-    #                 "wav2vec_feat": features["wav2vec_feat"], # (batch, 25, 96, 1024)
-    #                 "txt_feat" : features["txt_feat"]  # (batch, 124, 768(or 1024) )
+    # return {
+    #                 "spec": features["spec"],
+    #                 "spk_emb": features["spk_emb"],
+    #                 "phones": features["phones"],
+    #                 "text": features["text"],
+    #                 "txt_feat" : features["txt_feat"],
+    #                 "emotion_lb": features["emotion_lb"],
+    #                 "wav2vec_feat": features["wav2vec_feat"]
     #             }
     result = model(feat['spec'], feat['spk_emb'], feat['spk_emb'], feat['phones'], feat['wav2vec_feat'], feat['txt_feat'])
     # def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):

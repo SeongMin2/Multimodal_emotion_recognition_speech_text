@@ -77,6 +77,7 @@ def get_training_config():
     parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
+    parser.add_argument("--epochs", type=int, default=10)
 
     # Bottleneck configuration
     parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
