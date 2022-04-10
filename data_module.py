@@ -3,7 +3,8 @@ import os
 import pandas as pd
 
 PWD_PATH = './'
-SAVE_PATH = './extraction/'
+DATA_PATH = './full_data'
+SAVE_PATH = DATA_PATH + '/table'
 
 SAVE_TO_CSV = True
 
@@ -63,7 +64,7 @@ def extract_data(save_path, sess_list) -> pd.DataFrame: # 이게 리턴 주석 �
         df_iemocap = pd.merge(left=df_text, right=df_emoeval, how="inner", on="wav_file")
 
         if(SAVE_TO_CSV):
-            df_iemocap.to_csv(save_path + 'Session{}.csv'.format(sess), index=False)
+            df_iemocap.to_csv(save_path + '/Session{}.csv'.format(sess), index=False)
 
         df = pd.concat([df, df_iemocap])
 
@@ -88,7 +89,7 @@ def get_data(sess_list, save_path):
 
 def main():
     sess_list = [1]
-    save_path = './extraction/'
+    save_path = SAVE_PATH
 
     wav_paths, transcripts, emotions = get_data(save_path,sess_list) # list들이 return 됨
     pass

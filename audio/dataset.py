@@ -6,6 +6,7 @@ import logging
 import math
 # from omegaconf import DictConfig
 from torch import Tensor
+import parser_helper as helper
 from torch.utils.data import Dataset
 from .wav2vec.extract_wav2vec2 import apply_wav2vec
 from text.feature_embedding import extract_features
@@ -70,8 +71,12 @@ class SpeechTextDataset(Dataset):
         self.tokenizer = AutoTokenizer.from_pretrained(self.txt_feat_model)
         self.text_model = AutoModel.from_pretrained(self.txt_feat_model)
 
-        print("num utterances: ", self.num_tokens)  # number of utterances
+        print("Num utterances: ", self.num_tokens)  # number of utterances
         print("Finished loading the dataset...")
+
+        helper.logger("info", "[INFO] Dataset info - mode: {} dir: {}".format(self.mode, self.dataset_dir))
+        helper.logger("info", "[INFO] Num utterances: {}".format(self.num_tokens))
+        helper.logger("info", "[INFO] Finished loading the dataset...")
         
         # log 나중에 할까나
 

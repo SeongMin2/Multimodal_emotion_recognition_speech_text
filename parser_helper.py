@@ -8,7 +8,12 @@ from pathlib import Path
 from phoneme.gentle import phone_seq as ph
 import glob
 import pandas as pd
-from ABS_PATH import ABS_PATH
+# from ABS_PATH import ABS_PATH
+
+ABS_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit("\\", 1)[0]
+# 위는 window일 경우임
+# 리눅스의 경우는 다음과 같이 진행함
+# ABS_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit("/", 1)[0]
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")
@@ -71,6 +76,7 @@ def get_training_config():
     parser.add_argument("--train_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/train", help="Path to train data dir")
     parser.add_argument("--test_dir", type=str, default= ABS_PATH + "/full_data/folds/fold1/test", help="Path to test data dir")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
+    parser.add_argument("--md_save_dir", type=str, default=ABS_PATH + "/model/save", help="Path to Model save dir")
 
     parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
     parser.add_argument("--dropout_ratio", type=float, default= 0.2, help="Ratio of dropout")
@@ -78,6 +84,8 @@ def get_training_config():
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
     parser.add_argument("--epochs", type=int, default=10)
+
+    parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
 
     # Bottleneck configuration
     parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
@@ -133,10 +141,14 @@ def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_termina
                 print(colored(message,'white', 'on_green'))
             else:
                 print(colored(message,'green'))
+    elif level_name == 'training':
+        logging.info(message)
+        if show_terminal:
+            print(colored(message, 'blue'))
     elif level_name == 'error':
         logging.error(message)
         if show_terminal:
-            print(colored(message,'red'))
+            print(colored(message, 'red'))
     elif level_name == 'warning':
         logging.warning(message)
         if show_terminal:

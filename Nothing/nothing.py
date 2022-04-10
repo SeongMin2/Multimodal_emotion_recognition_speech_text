@@ -10,6 +10,9 @@ import numpy as np
 #from pathlib import Path
 from transformers import AutoModel, AutoTokenizer, AutoConfig
 
+a=[1,2,3]
+b=[4,5,6]
+c = [a+b for a,b in zip(a,b)]
 
 def calc_WA(logit, ground_truth):
     n_tp = [0 for i in range(4)]

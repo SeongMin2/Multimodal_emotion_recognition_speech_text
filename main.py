@@ -36,7 +36,7 @@ def main():
     config = helper.get_training_config()
     train_loader = get_train_data_loaders(config, train_npz)
     # train_loader, test_loader, train_eval, train_1batch = get_data_loaders(config, train_npz, test_npz)
-
+    helper.logger("info", "[INFO] Data loading complete!")
     model = Multimodal(config)
     model_check(model, train_loader)
     pass

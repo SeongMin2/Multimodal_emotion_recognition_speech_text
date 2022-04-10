@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import os, math, sys
 from audio.dataset import SpeechTextDataset
+import parser_helper as helper
 
 # 생각해보니까 make_spec할 때 spectrum 잘 만들어주는데 collate_fn이 필요 없지 않나..
 # 그렇다면 make_spect는 audio마다 길이가 다른데 어떻게 처리한지 한 번 확인해봐야 할듯
@@ -15,6 +16,8 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     test_dir = config.test_dir
     wav_dir = config.wav_dir
     batch_size = config.batch_size
+
+    helper.logger("info", "[INFO] Data loading...")
 
     train_dataset = SpeechTextDataset(config,"train",train_dir, wav_dir, train_npz, 16000)
 
@@ -71,6 +74,8 @@ def get_train_data_loaders(config, train_npz, num_workers=4):
     train_dir = config.train_dir
     wav_dir = config.wav_dir
     batch_size = config.batch_size
+
+    helper.logger("info", "[INFO] Data loading...")
 
     train_dataset = SpeechTextDataset(config,"train",train_dir, wav_dir, train_npz, 16000)
 

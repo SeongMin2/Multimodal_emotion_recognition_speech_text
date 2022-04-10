@@ -4,6 +4,7 @@ from model.multimodal import Multimodal
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import parser_helper as helper
 import time
 import datetime
 import numpy as np
@@ -29,12 +30,11 @@ class Solver(object):
         self.config = config
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-
-
-
         self.pretrained_check = get_checkpoint_path(config.pretrained_model)
 
         self.build_model()
+
+        helper.logger('training', "[INFO] Building model")
 
     def build_model(self):
         self.model = Multimodal(self.config)
@@ -80,7 +80,7 @@ class Solver(object):
 
         return ua
 
-    def calc_WA(logit, ground_truth):
+    def calc_WA(self, logit, ground_truth):
         n_tp = [0 for i in range(4)]
         n_tp_fn = [0 for k in range(4)]
 
@@ -99,10 +99,10 @@ class Solver(object):
 
         for epoch in range(self.config.epochs):
             # To calculate Weighted Accuracy
-            train_tp = []
-            train_tp_fn = []
-            test_tp = []
-            test_tp_fn = []
+            train_tp = [0 for i in range(self.config.n_classes)]
+            train_tp_fn = [0 for i in range(self.config.n_classes)]
+            test_tp = [0 for i in range(self.config.n_classes)]
+            test_tp_fn = [0 for i in range(self.config.n_classes)]
 
             # To calculate Unweighted Accuracy
             train_ua = 0.0
@@ -135,6 +135,32 @@ class Solver(object):
 
                 total_loss.backward()
                 self.optimizer.step()
+
+                train_ua += self.calc_UA(emotion_logits, emotion_lb)
+
+                tmp_tp, tmp_tp_fn = self.calc_WA(emotion_logits, emotion_lb)
+                train_tp = [x+y for x,y in zip(train_tp, tmp_tp)]
+                train_tp_fn = [x+y for x,y in zip(train_tp_fn, tmp_tp_fn)]
+
+                if (batch_id+1) % self.config.log_interval:
+                    print("epoch {} batch id {} cls_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
+                                                                                              emotion_loss.data.cpu().numpy(),
+                                                                                              (spec_loss + post_spec_loss)/2,
+                                                                                              train_ua / (batch_id + 1)))
+                    helper.logger("training", "[INFO] epoch {} batch id {} cls_loss {} spec_loss {} post_spec_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
+                                                                                                                         emotion_loss.data.cpu().numpy(),
+                                                                                                                         spec_loss, post_spec_loss,
+                                                                                                                         (spec_loss + post_spec_loss)/2,
+                                                                                                                         train_ua / (batch_id + 1)))
+
+            # train_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
+            print("[epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
+                                                              sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp) ))
+            helper.logger("info","[EPOCH] [epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
+                                                                                     sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)))
+
+
+
 
 
 
