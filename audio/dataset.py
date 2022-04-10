@@ -154,31 +154,31 @@ class SpeechTextDataset(Dataset):
         left = np.random.randint(features["spec"].shape[0] - gt_config["len_crop"])
         return self.feats_crop(features, left, gt_config)
 
-    def crop_utt_segments(self, features, db_config):
+    def crop_utt_segments(self, features, gt_config):
         """ For all the features, crop all the segments in an utterance
             and return them as lists """
-        num_segments = math.floor(features["spec"].shape[0] / db_config["len_crop"])
+        num_segments = math.floor(features["spec"].shape[0] / gt_config["len_crop"]) # 96 / 96 = 1
         uttr = []
         content_emb = []
         wav2vec_feat = []
         # crop and append the segments
         for seg_i in range(num_segments):
-            uttr.append(features["spec"][seg_i * db_config["len_crop"]:(seg_i + 1) * db_config["len_crop"], :])
-            content_emb.append(features["phones"][seg_i * db_config["len_crop"]:(seg_i + 1) * db_config["len_crop"], :])
-            if db_config["speech_input"] == "wav2vec":
+            uttr.append(features["spec"][seg_i * gt_config["len_crop"]:(seg_i + 1) * gt_config["len_crop"], :])
+            content_emb.append(features["phones"][seg_i * gt_config["len_crop"]:(seg_i + 1) * gt_config["len_crop"], :])
+            if gt_config["speech_input"] == "wav2vec":
                 wav2vec_feat.append(
-                    features["all_wav2vec_feat"][:, seg_i * db_config["len_crop"]:(seg_i + 1) * db_config["len_crop"],
+                    features["wav2vec_feat"][:, seg_i * gt_config["len_crop"]:(seg_i + 1) * gt_config["len_crop"],
                     :])
         # check if there is a last segment that needs padding
-        if ((features["spec"].shape[0] - num_segments * db_config["len_crop"]) > 1):
-            len_pad = db_config["len_crop"] - (features["spec"].shape[0] - db_config["len_crop"] * num_segments)
+        if ((features["spec"].shape[0] - num_segments * gt_config["len_crop"]) > 1):
+            len_pad = gt_config["len_crop"] - (features["spec"].shape[0] - gt_config["len_crop"] * num_segments)
             uttr.append(
-                np.pad(features["spec"][num_segments * db_config["len_crop"]:, :], ((0, len_pad), (0, 0)), "constant"))
+                np.pad(features["spec"][num_segments * gt_config["len_crop"]:, :], ((0, len_pad), (0, 0)), "constant"))
             content_emb.append(
-                np.pad(features["phones"][num_segments * db_config["len_crop"]:, :], ((0, len_pad), (0, 0)),
+                np.pad(features["phones"][num_segments * gt_config["len_crop"]:, :], ((0, len_pad), (0, 0)),
                        "constant"))
-            if db_config["speech_input"] == "wav2vec":
-                wav2vec_feat.append(np.pad(features["all_wav2vec_feat"][:, num_segments * db_config["len_crop"]:, :],
+            if gt_config["speech_input"] == "wav2vec":
+                wav2vec_feat.append(np.pad(features["wav2vec_feat"][:, num_segments * gt_config["len_crop"]:, :],
                                            ((0, 0), (0, len_pad), (0, 0)), "constant"))
 
         features["spec"] = uttr
@@ -231,10 +231,7 @@ class SpeechTextDataset(Dataset):
     def __getitem__(self, idx): # -> dict:
         """ Provides paif of audio & transcript """
 
-        ## 여기서 emotion에 대해서 one hot encoder 형태로 바꿔줘야함 아직 안함
-        # emotion one hot으로 바꾸는 함수 만들어서 하면 될듯
-
-        gt_config={}
+        gt_config={} # GetiTem (gt)
         gt_config["len_crop"] = self.len_crop
         gt_config["speech_input"] = self.speech_input
 
@@ -250,8 +247,10 @@ class SpeechTextDataset(Dataset):
         wav2vec_feat = self._parse_wav(wav_path) # wav2vec feature results
 
         txt_feat = self._parse_transcript(txt)
+        # text preprocessing
+        txt_feat = txt_feat[1:-1]
+        # 아니 padding 하던디
 
-        # emotion_label = self._get_emotion_class(emotion_class)
 
         features = {}
         features["spec"] = spec

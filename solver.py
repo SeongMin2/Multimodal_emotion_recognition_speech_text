@@ -92,6 +92,9 @@ class Solver(object):
 
         return n_tp, n_tp_fn
 
+    # def eval(self):
+
+
 
     def train(self):
         data_loader = self.train_loader
@@ -168,11 +171,4 @@ class Solver(object):
             helper.logger("info","[EPOCH] [epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
                                                                                      sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)))
             
-
-
-
-
-
-
-
-
+            # eval 후 torch.save 시전하즈아
