@@ -9,6 +9,13 @@ import random
 import numpy as np
 #from pathlib import Path
 from transformers import AutoModel, AutoTokenizer, AutoConfig
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+import torch
+MODEL_TYPE = "facebook/wav2vec2-large-lv60"
+
+processor = Wav2Vec2Processor.from_pretrained(MODEL_TYPE) # normalize the data
+model = Wav2Vec2ForCTC.from_pretrained(MODEL_TYPE)
+
 
 a=[1,2,3]
 b=[4,5,6]

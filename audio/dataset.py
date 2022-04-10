@@ -222,7 +222,7 @@ class SpeechTextDataset(Dataset):
 
         return feature
 
-    def _parse_transcript(self, transcript: str) -> list:
+    def _parse_transcript(self, transcript: str):
 
         feature = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
 
@@ -249,7 +249,9 @@ class SpeechTextDataset(Dataset):
         txt_feat = self._parse_transcript(txt)
         # text preprocessing
         txt_feat = txt_feat[1:-1]
-        # 아니 padding 하던디
+        # 여러 tokenizer에 따라서 padding 진행하긴하지만 애초에 tokenizer에서 max_length박아서 padding해서 일단 안한다.
+
+        txt_feat = torch.from_numpy(txt_feat)
 
 
         features = {}

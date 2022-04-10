@@ -79,6 +79,8 @@ def get_train_data_loaders(config, train_npz, num_workers=4):
 
     train_dataset = SpeechTextDataset(config,"train",train_dir, wav_dir, train_npz, 16000)
 
+    result = train_dataset[0]
+
     worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
     train_loader = DataLoader(dataset=train_dataset,
                               batch_size = batch_size,

@@ -10,10 +10,11 @@ import glob
 import pandas as pd
 # from ABS_PATH import ABS_PATH
 
-ABS_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit("\\", 1)[0]
+ABS_PATH = os.path.dirname(os.path.abspath(__file__))
 # 위는 window일 경우임
 # 리눅스의 경우는 다음과 같이 진행함
 # ABS_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit("/", 1)[0]
+# 아님 그럴필요 없음
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")

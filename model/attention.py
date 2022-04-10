@@ -164,10 +164,12 @@ class Cross_attention(nn.Module):
     def Scaled_Dot_Product_attention(self, query, key, value, mask=None):
 
         alpha = torch.matmul(query, key.permute(0, 1, 3, 2)) / self.scale
-
+        '''
         if mask is not None:
             # 마스크(mask) 값이 0인 부분을 -1e10으로 채우기
-            alpha = alpha.masked_fill(mask == 0, -1e10)
+            #alpha = alpha.masked_fill(mask == 0, -1e10)
+            pass
+        '''
 
         # 어텐션(attention) 스코어 계산: 각 단어에 대한 확률 값
         alpha = torch.softmax(alpha, dim=-1)

@@ -43,7 +43,7 @@ def apply_wav2vec(batch, sr:int):
 
         # pad the speech data
     speech = np.pad(batch, padding, mode='constant')  # 앞 뒤로 160씩 총 320 padding
-    inputs = processor(speech, return_tensors="pt", sampling_rate=sr, padding=True)
+    inputs = processor(speech, return_tensors="pt", sampling_rate=sr, padding=True) # userwarning 나오는데 이거 내부 문제임
     # 일단 여기서 저 padding=True가 뭔지 모르겠음
     # https://huggingface.co/docs/transformers/main/en/main_classes/feature_extractor#transformers.SequenceFeatureExtractor.pad.padding
     # 그냥 혼자 padding할거면 의미 없음
