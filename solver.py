@@ -80,17 +80,17 @@ class Solver(object):
 
         return ua
 
+    def calc_WA(logit, ground_truth):
+        n_tp = [0 for i in range(4)]
+        n_tp_fn = [0 for k in range(4)]
 
-
-    def calc_WA(self, logit, ground_truth):
-        n_tp = [0 for i in range(self.config.n_classes)]
         max_vals, max_indices = torch.max(logit, 1)
-        tmp_correct = (max_indices == ground_truth)
-        for idx in max_indices:
+        tmp_correct = (max_indices.numpy() == ground_truth.numpy())
+        for i, idx in enumerate(max_indices.numpy()):
             n_tp[idx] += tmp_correct[idx]
+            n_tp_fn[ground_truth[i]] += 1
 
-
-
+        return n_tp, n_tp_fn
 
 
     def train(self):
@@ -98,10 +98,16 @@ class Solver(object):
         keys = ['train_loss', 'test_loss']
 
         for epoch in range(self.config.epochs):
-            train_wa = 0.0
+            # To calculate Weighted Accuracy
+            train_tp = []
+            train_tp_fn = []
+            test_tp = []
+            test_tp_fn = []
+
+            # To calculate Unweighted Accuracy
             train_ua = 0.0
-            test_wa = 0.0
             test_ua = 0.0
+
             self.model.train()
 
             for batch_id, batch in enumerate(tqdm(data_loader)):
@@ -129,6 +135,7 @@ class Solver(object):
 
                 total_loss.backward()
                 self.optimizer.step()
+
 
 
 
