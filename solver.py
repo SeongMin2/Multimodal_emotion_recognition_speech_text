@@ -97,7 +97,12 @@ class Solver(object):
         data_loader = self.train_loader
         keys = ['train_loss', 'test_loss']
 
+        helper.logger("info","[INFO] Start training...")
+        start_time = time.time()
+
         for epoch in range(self.config.epochs):
+            epc_start_time = time.time()
+
             # To calculate Weighted Accuracy
             train_tp = [0 for i in range(self.config.n_classes)]
             train_tp_fn = [0 for i in range(self.config.n_classes)]
@@ -142,6 +147,7 @@ class Solver(object):
                 train_tp = [x+y for x,y in zip(train_tp, tmp_tp)]
                 train_tp_fn = [x+y for x,y in zip(train_tp_fn, tmp_tp_fn)]
 
+
                 if (batch_id+1) % self.config.log_interval:
                     print("epoch {} batch id {} cls_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
                                                                                               emotion_loss.data.cpu().numpy(),
@@ -156,8 +162,12 @@ class Solver(object):
             # train_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
             print("[epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
                                                               sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp) ))
+            epc = time.time() - epc_start_time
+            epc = str(datetime.timedelta(seconds=epc))[:-7]
+            helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
             helper.logger("info","[EPOCH] [epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
                                                                                      sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)))
+            
 
 
 
