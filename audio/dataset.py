@@ -157,7 +157,7 @@ class SpeechTextDataset(Dataset):
     def crop_utt_segments(self, features, gt_config):
         """ For all the features, crop all the segments in an utterance
             and return them as lists """
-        num_segments = math.floor(features["spec"].shape[0] / gt_config["len_crop"]) # 96 / 96 = 1
+        num_segments = math.floor(features["spec"].shape[0] / gt_config["len_crop"]) #  원래 spec 크기 / 96
         uttr = []
         content_emb = []
         wav2vec_feat = []
