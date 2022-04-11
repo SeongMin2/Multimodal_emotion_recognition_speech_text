@@ -13,6 +13,11 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 MODEL_TYPE = "facebook/wav2vec2-large-lv60"
 
+a="hi"
+b="hi"
+
+if a==b:
+    print('hf')
 processor = Wav2Vec2Processor.from_pretrained(MODEL_TYPE) # normalize the data
 model = Wav2Vec2ForCTC.from_pretrained(MODEL_TYPE)
 

@@ -57,20 +57,21 @@ class Solver(object):
         spec, spk_emb, phones, txt_feat, emotion_lb = vars
 
         spec = spec.to(self.device)
-        spec = spec.type(torch.cuda.FloatTensor) # Shoud i..?
 
         spk_emb = spk_emb.to(self.device)
-        spk_emb = spk_emb.type(torch.cuda.FloatTensor)
 
         phones = phones.to(self.device)
-        phones = phones.type(torch.cuda.FloatTensor)
 
         txt_feat = txt_feat.to(self.device)
-        txt_feat = txt_feat.type(torch.cuda.FloatTensor)
+        if self.device.type != "cpu": # 이거 용도 파악 정확히 못함
+            spec = spec.type(torch.cuda.FloatTensor)
+            spk_emb = spk_emb.type(torch.cuda.FloatTensor)
+            phones = phones.type(torch.cuda.FloatTensor)
+            txt_feat = txt_feat.type(torch.cuda.FloatTensor)
 
         if state == "train":
             emotion_lb = emotion_lb.to(self.device)
-            emotion_lb = emotion_lb.type(torch.cuda.LongTensor)
+            # emotion_lb = emotion_lb.type(torch.cuda.LongTensor)
             # 왜 IntTensor로 안하는것이지
         elif state == "test":
             emotion_lb = emotion_lb.numpy()[0]
@@ -119,7 +120,8 @@ class Solver(object):
                 if self.config.speech_input == "wav2vec":
                     spec, spk_emb, phones, txt_feat, emotion_lb, wav2vec_feat = batch.values()
                     wav2vec_feat = wav2vec_feat.to(self.device)
-                    wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
+                    if self.device.type != "cpu":
+                        wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
                 elif self.config.speech_input == "spec":
                     spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
                     wav2vec_feat = None
@@ -157,7 +159,8 @@ class Solver(object):
                 if self.config.speech_input == "wav2vec":
                     spec, spk_emb, phones, txt_feat, emotion_lb, wav2vec_feat = batch.values()
                     wav2vec_feat = wav2vec_feat.to(self.device)
-                    wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
+                    if self.device.type != "cpu":
+                        wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
                 elif self.config.speech_input == "spec":
                     spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
                     wav2vec_feat = None
@@ -185,7 +188,7 @@ class Solver(object):
                 train_tp_fn = [x+y for x,y in zip(train_tp_fn, tmp_tp_fn)]
 
 
-                if (batch_id+1) % self.config.log_interval:
+                if (batch_id+1) % self.config.log_interval == 0:
                     print("epoch {} batch id {} cls_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
                                                                                               emotion_loss.data.cpu().numpy(),
                                                                                               (spec_loss + post_spec_loss)/2,
