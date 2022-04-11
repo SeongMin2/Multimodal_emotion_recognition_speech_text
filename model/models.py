@@ -134,7 +134,7 @@ class Encoder(torch.nn.Module):
 
         if config.speech_input == "wav2vec":
             input_len = config.dim_wav2vec_emb
-            conv_dim = 2048
+            conv_dim = 2048 # 이 부분을 wav2vec 불러와서 config 조회하는 부분이 있을텐데 그 때의 값으로 바꾸는것이 좋을듯
         elif config.speech_input == "spec":
             input_len = config.num_mels
 

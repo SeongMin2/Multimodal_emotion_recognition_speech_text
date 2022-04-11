@@ -4,6 +4,7 @@
 from audio.data_loader import get_data_loaders, get_train_data_loaders
 import parser_helper as helper
 from model.multimodal import Multimodal
+from solver import Solver
 
 from torch.backends import cudnn
 
@@ -11,7 +12,12 @@ from torch.backends import cudnn
 train_npz = "train"
 test_npz = "test"
 
+def get_solver(config, train_loader, test_loader, train_eval, train_batch1):
+    solver = Solver(config, train_loader, test_loader, train_eval, train_batch1)
 
+    helper.logger("info", "[INFO] Getting the model...")
+
+    return solver
 
 def model_check(model, train_loader):
     data_iter = iter(train_loader)
@@ -34,9 +40,11 @@ def model_check(model, train_loader):
 
 def main():
     config = helper.get_training_config()
-    train_loader = get_train_data_loaders(config, train_npz)
-    # train_loader, test_loader, train_eval, train_1batch = get_data_loaders(config, train_npz, test_npz)
+    #train_loader = get_train_data_loaders(config, train_npz)
+    train_loader, test_loader, train_eval, train_batch1 = get_data_loaders(config, train_npz, test_npz)
     helper.logger("info", "[INFO] Data loading complete!")
+    solver = get_solver(config, train_loader, test_loader, train_eval, train_batch1)
+    solver.train()
     model = Multimodal(config)
     model_check(model, train_loader)
     pass

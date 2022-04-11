@@ -14,6 +14,8 @@ from pathlib import Path
 
 def get_checkpoint_path(checkpoint_path_str):
     """ Return the checkpoint path if it exists """
+    if checkpoint_path_str == None:
+        return None
     checkpoint_path = Path(checkpoint_path_str)
 
     if not checkpoint_path.exists():
@@ -22,10 +24,11 @@ def get_checkpoint_path(checkpoint_path_str):
         return checkpoint_path_str
 
 class Solver(object):
-    def __init__(self, config, train_loader, test_loader, train_eval_loader):
+    def __init__(self, config, train_loader, test_loader, train_eval_loader, train_batch1):
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.train_eval_loader = train_eval_loader
+        self.train_batch1 = train_batch1
 
         self.config = config
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -92,13 +95,43 @@ class Solver(object):
 
         return n_tp, n_tp_fn
 
-    # def eval(self):
+    def eval(self, loader_type):
 
+        eval_tp = [0 for i in range(self.config.n_classes)]
+        eval_tp_fn = [0 for i in range(self.config.n_classes)]
+
+        eval_ua = 0.0
+
+        with torch.no_grad():
+            if loader_type == "train":
+                data_loader = self.train_batch1
+            elif loader_type == "test":
+                data_loader = self.tesst_loader
+
+            helper.logger("info", "[INFO] Starting segment-base evaluation...")
+            epc_start_time = time.time()
+
+            self.model.eval()
+
+            for batch in data_loader:
+                self.optimizer.zero_grad() # 여기서 하는것 크게 의미 없긴함
+
+                if self.config.speech_input == "wav2vec":
+                    spec, spk_emb, phones, txt_feat, emotion_lb, wav2vec_feat = batch.values()
+                    wav2vec_feat = wav2vec_feat.to(self.device)
+                    wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
+                elif self.config.speech_input == "spec":
+                    spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
+                    wav2vec_feat = None
+
+                tmp_vars = self.data_to_device(vars=[spec, spk_emb, phones, txt_feat, emotion_lb],
+                                               state="test")
+                spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
 
 
     def train(self):
         data_loader = self.train_loader
-        keys = ['train_loss', 'test_loss']
+        # keys = ['train_loss', 'test_loss']
 
         helper.logger("info","[INFO] Start training...")
         start_time = time.time()
@@ -121,12 +154,13 @@ class Solver(object):
             for batch_id, batch in enumerate(tqdm(data_loader)):
                 self.optimizer.zero_grad()
 
-                if self.config.input_speech == "wav2vec":
+                if self.config.speech_input == "wav2vec":
                     spec, spk_emb, phones, txt_feat, emotion_lb, wav2vec_feat = batch.values()
                     wav2vec_feat = wav2vec_feat.to(self.device)
                     wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
-                elif self.config.input_speech == "spec":
+                elif self.config.speech_input == "spec":
                     spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
+                    wav2vec_feat = None
 
                 tmp_vars = self.data_to_device(vars=[spec, spk_emb, phones, txt_feat, emotion_lb],
                                                state="train")
