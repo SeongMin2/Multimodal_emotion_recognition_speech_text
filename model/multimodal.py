@@ -91,11 +91,7 @@ class Multimodal(nn.Module):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
         # encoder_outputs : (batch, 96, 2*d)
 
-        # for inference
-        if spk_emb_dc is None:
-            # return codes and logits
-            return 1 # 여기에 이제 ser_tail 지나고 cross attention 지나고 나온것이 나와야 겠네
-
+        '''
         ##########################################
         #              Down-Sampling             #
         ##########################################
@@ -108,18 +104,6 @@ class Multimodal(nn.Module):
         # downsample
         for i in range(0, encoder_outputs.size(1), self.freq):
             codes.append(torch.cat((out_forward[:, i + self.freq - 1, :], out_backward[:, i, :]), dim=-1))
-            
-        '''
-        # 아놔 이거 필요 없네 ㅎ
-        # 이거는 그냥 그 codes에서 나온거를 다시 하나의 tensor로 온전하게 만드는것이었음
-        down_sampled = []
-        for i, code in enumerate(codes):
-            code = torch.unsqueeze(code, 1)
-            if i == 0:
-                down_sampled = code
-            else:
-                down_sampled = torch.cat((down_sampled, code), dim=1)
-        '''
 
         ##########################################
         #              Up-Sampling               #
@@ -143,7 +127,7 @@ class Multimodal(nn.Module):
         # spec : (batch, 96, 80)
 
         post_output = self.post_net(decoder_output.transpose(1,2))
-        # post_output : (batch, 80, 96)
+        # post_output : (batch, 80, 96) '''
 
         ser_feat = self.ser_tail(encoder_outputs)
         
@@ -170,6 +154,50 @@ class Multimodal(nn.Module):
         # 이후로 classifier 들어가면 됨
 
         output = self.classifier(src)
+
+        # for inference
+        if spk_emb_dc is None:
+            # return codes and logits
+            return output
+
+        # AutoEncoder for disentanglement learning
+        ##########################################
+        #              Down-Sampling             #
+        ##########################################
+
+        # downsampling
+        codes = []
+        out_forward = encoder_outputs[:, :, :self.dim_neck]
+        out_backward = encoder_outputs[:, :, self.dim_neck:]
+
+        # downsample
+        for i in range(0, encoder_outputs.size(1), self.freq):
+            codes.append(torch.cat((out_forward[:, i + self.freq - 1, :], out_backward[:, i, :]), dim=-1))
+
+        ##########################################
+        #              Up-Sampling               #
+        ##########################################
+
+        tmp = []
+
+        for code in codes:
+            tmp.append(code.unsqueeze(1).expand(-1, int(spec.size(1) / len(codes)), -1))
+        up_sampled = torch.cat(tmp, dim=1)
+        # up_sampled : (batch, 96, 16)
+
+        phone_feat = self.phone_encoder(phones)
+        # phone_feat : (batch, 96, 256)
+
+        decoder_input = torch.cat((up_sampled, spk_emb_dc.unsqueeze(1).expand(-1, spec.size(1), -1), phone_feat),
+                                  dim=-1)
+        # decoder_input : (batch, 96, 512 + 2*d)
+
+        decoder_output = self.decoder(decoder_input)
+        # spec_logits : (batch, 96, 80)
+        # spec : (batch, 96, 80)
+
+        post_output = self.post_net(decoder_output.transpose(1, 2))
+        # post_output : (batch, 80, 96)
 
         return decoder_output, post_output.transpose(1,2), output
 

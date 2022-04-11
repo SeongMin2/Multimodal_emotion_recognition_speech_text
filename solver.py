@@ -103,18 +103,20 @@ class Solver(object):
 
         eval_ua = 0.0
 
+        n_fold = self.config.test_dir.rsplit('/', 2)[1]
+
         with torch.no_grad():
             if loader_type == "train":
                 data_loader = self.train_batch1
             elif loader_type == "test":
-                data_loader = self.tesst_loader
+                data_loader = self.test_loader
 
-            helper.logger("info", "[INFO] Starting segment-base evaluation...")
-            epc_start_time = time.time()
+            helper.logger("info", "[INFO] Fold{} start segment-base evaluation...".format(n_fold))
+            inf_start_time = time.time()
 
             self.model.eval()
 
-            for batch in data_loader:
+            for batch_id, batch in enumerate(data_loader):
                 self.optimizer.zero_grad() # 여기서 하는것 크게 의미 없긴함
 
                 if self.config.speech_input == "wav2vec":
@@ -130,12 +132,29 @@ class Solver(object):
                                                state="test")
                 spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
 
+                emotion_logits = self.model(spec, spk_emb, None, phones, wav2vec_feat, txt_feat)
+
+                eval_ua += self.calc_UA(eval_ua)
+
+                tmp_tp, tmp_tp_fn = self.calc_WA(emotion_logits, emotion_lb)
+                eval_tp = [x + y for x, y in zip(eval_tp, tmp_tp)]
+                eval_tp_fn = [x + y for x, y in zip(eval_tp_fn, tmp_tp_fn)]
+
+                # 일단 .detach .data() .cpu() .numpy() 이런것들을 하는데 마지막에 결과 나오고 하던데 용도 알아보기
+
+            # eval_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
+            print("[fold{} eval UA {} eval WA {}]".format(n_fold, eval_ua / (batch_id + 1),sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
+            inf = time.time() - inf_start_time
+            inf = str(datetime.timedelta(seconds=inf))[:-7]
+            helper.logger("info", "[TIME] Eval inference time {}".format(inf))
+            helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, eval_ua / (batch_id + 1), sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
 
     def train(self):
         data_loader = self.train_loader
         # keys = ['train_loss', 'test_loss']
 
-        helper.logger("info","[INFO] Start training...")
+        n_fold = self.config.train_dir.rsplit('/', 2)[1][4]
+        helper.logger("info","[INFO] Fold{} start training...".format(n_fold))
         start_time = time.time()
 
         for epoch in range(self.config.epochs):
@@ -200,12 +219,12 @@ class Solver(object):
                                                                                                                          train_ua / (batch_id + 1)))
 
             # train_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
-            print("[epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
+            print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua / (batch_id + 1),
                                                               sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp) ))
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
-            helper.logger("info","[EPOCH] [epoch {} train UA {} train WA {}]".format(epoch + 1, train_ua / (batch_id + 1),
+            helper.logger("info","[EPOCH] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua / (batch_id + 1),
                                                                                      sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)))
             
             # eval 후 torch.save 시전하즈아

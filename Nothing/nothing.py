@@ -238,3 +238,16 @@ vector, _sr = librosa.load('../IEMOCAP_full_release/Session1/sentences/wav/Ses01
 
 pass
 '''
+
+# multimodal downsampling 하고 넣었던것 필요없음...
+'''
+        # 아놔 이거 필요 없네 ㅎ
+        # 이거는 그냥 그 codes에서 나온거를 다시 하나의 tensor로 온전하게 만드는것이었음
+        down_sampled = []
+        for i, code in enumerate(codes):
+            code = torch.unsqueeze(code, 1)
+            if i == 0:
+                down_sampled = code
+            else:
+                down_sampled = torch.cat((down_sampled, code), dim=1)
+        '''

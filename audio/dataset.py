@@ -74,7 +74,7 @@ class SpeechTextDataset(Dataset):
         print("Num utterances: ", self.num_tokens)  # number of utterances
         print("Finished loading the dataset...")
 
-        helper.logger("info", "[INFO] Dataset info - mode: {} dir: {}".format(self.mode, self.dataset_dir))
+        helper.logger("info", "[INFO] Dataset info - mode: {} / dir: {}".format(self.mode, self.dataset_dir))
         helper.logger("info", "[INFO] Num utterances: {}".format(self.num_tokens))
         helper.logger("info", "[INFO] Finished loading the dataset...")
         
