@@ -69,19 +69,23 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     return train_loader, test_loader, train_eval, train_1batch
 
 
-def get_train_data_loaders(config, train_npz, num_workers=4):
+def get_train_data_loaders(config, train_npz, test_npz, num_workers=4):
 
     train_dir = config.train_dir
+    test_dir = config.test_dir
     wav_dir = config.wav_dir
     batch_size = config.batch_size
 
     helper.logger("info", "[INFO] Data loading...")
 
     train_dataset = SpeechTextDataset(config,"train",train_dir, wav_dir, train_npz, 16000)
+    test_dataset = SpeechTextDataset(config, "test", test_dir, wav_dir, test_npz, 16000)
 
-    result = train_dataset[0]
-    result2 = train_dataset[1]
-    a = train_dataset[2]
+    # a = train_dataset[0]
+
+    #result = train_dataset[0]
+    #result2 = train_dataset[1]
+    #a = train_dataset[2]
 
     worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
     train_loader = DataLoader(dataset=train_dataset,
@@ -92,6 +96,15 @@ def get_train_data_loaders(config, train_npz, num_workers=4):
                               drop_last=True
                               )
 
+    # get the test dataset cut to perform the utterance-level prediction
+    worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
+    test_loader = data.DataLoader(dataset=test_dataset,
+                                  batch_size=1,
+                                  shuffle=False,
+                                  # num_workers=num_workers,
+                                  drop_last=False,
+                                  worker_init_fn=worker_init_fn,
+                                  pin_memory=True)
     '''
     worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
     train_loader = data.DataLoader(dataset=train_dataset,
@@ -103,7 +116,7 @@ def get_train_data_loaders(config, train_npz, num_workers=4):
                                    pin_memory=True)
     '''
 
-    return train_loader
+    return train_loader, test_loader
 
 
 

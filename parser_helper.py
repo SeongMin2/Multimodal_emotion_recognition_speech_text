@@ -4,6 +4,7 @@ from datetime import datetime
 from termcolor import colored
 import os
 import numpy as np
+import torch
 from pathlib import Path
 from phoneme.gentle import phone_seq as ph
 import glob
@@ -72,6 +73,8 @@ def get_config():
 
 def get_training_config():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument("--device", type=str, default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
 
     parser.add_argument("--data_dir", type=str, default="./full_data", help="Path to data dir")
     parser.add_argument("--train_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/train", help="Path to train data dir")

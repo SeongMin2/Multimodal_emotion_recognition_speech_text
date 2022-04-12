@@ -146,10 +146,12 @@ class Cross_attention2(nn.Module):
 class Cross_attention(nn.Module):
     def __init__(self, config):
         super(Cross_attention, self).__init__()
+
         self.hidden_dim = config.attention_emb  # 임베딩 차원
         self.n_heads = config.n_heads  # 헤드(head)의 개수: 서로 다른 어텐션(attention) 컨셉의 수
         self.head_dim = int(config.attention_emb / config.n_heads) # head의 dim을 나눠줄 필요가 없거든
         self.dropout_ratio = config.dropout_ratio
+
 
         self.fc_q = nn.Linear(self.hidden_dim, self.hidden_dim)  # Query 값에 적용될 FC 레이어
         self.fc_k = nn.Linear(self.hidden_dim, self.hidden_dim)  # Key 값에 적용될 FC 레이어
@@ -159,7 +161,7 @@ class Cross_attention(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_ratio)
 
-        self.scale = torch.sqrt(torch.FloatTensor([self.head_dim]))  # .to(device)
+        self.scale = torch.sqrt(torch.FloatTensor([self.head_dim])).to(config.device)
 
     def Scaled_Dot_Product_attention(self, query, key, value, mask=None):
 

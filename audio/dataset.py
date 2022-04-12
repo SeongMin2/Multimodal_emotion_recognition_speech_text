@@ -107,6 +107,7 @@ class SpeechTextDataset(Dataset):
                 "spk_emb": features["spk_emb"],
                 "phones": features["phones"],
                 "txt_feat" : features["txt_feat"],
+                "attn_mask" : features["attn_mask"],
                 "emotion_lb": features["emotion_lb"],
                 "wav2vec_feat": features["wav2vec_feat"]
             }
@@ -224,9 +225,9 @@ class SpeechTextDataset(Dataset):
 
     def _parse_transcript(self, transcript: str):
 
-        feature = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
+        feature, attn_mask = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
 
-        return feature
+        return feature, attn_mask
 
     def __getitem__(self, idx): # -> dict:
         """ Provides paif of audio & transcript """
@@ -246,9 +247,10 @@ class SpeechTextDataset(Dataset):
 
         wav2vec_feat = self._parse_wav(wav_path) # wav2vec feature results
 
-        txt_feat = self._parse_transcript(txt)
+        txt_feat, attn_mask = self._parse_transcript(txt)
         # text preprocessing
         txt_feat = txt_feat[1:-1]
+        attn_mask = attn_mask[1:-1]
         # 여러 tokenizer에 따라서 padding 진행하긴하지만 애초에 tokenizer에서 max_length박아서 padding해서 일단 안한다.
 
         txt_feat = torch.from_numpy(txt_feat)
@@ -261,6 +263,7 @@ class SpeechTextDataset(Dataset):
         features["wav2vec_feat"] = wav2vec_feat
         features["text"] = txt
         features['txt_feat'] = txt_feat
+        features['attn_mask'] = attn_mask
         features["emotion_lb"] = emotion_class
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 

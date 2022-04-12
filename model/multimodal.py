@@ -87,7 +87,7 @@ class Multimodal(nn.Module):
         self.n_heads = config.n_heads
         self.batch_size = config.batch_size
 
-    def forward(self, spec, spk_emb, spk_emb_dc ,phones, wav2vec_feat, txt_feat):
+    def forward(self, spec, spk_emb, spk_emb_dc ,phones, wav2vec_feat, txt_feat, attn_mask):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
         # encoder_outputs : (batch, 96, 2*d)
 

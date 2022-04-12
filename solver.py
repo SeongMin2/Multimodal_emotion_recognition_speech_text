@@ -24,14 +24,14 @@ def get_checkpoint_path(checkpoint_path_str):
         return checkpoint_path_str
 
 class Solver(object):
-    def __init__(self, config, train_loader, test_loader, train_eval_loader, train_batch1):
+    def __init__(self, config, train_loader, test_loader, train_eval, train_batch1):
         self.train_loader = train_loader
         self.test_loader = test_loader
-        self.train_eval_loader = train_eval_loader
+        self.train_eval = train_eval
         self.train_batch1 = train_batch1
 
         self.config = config
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.device = config.device #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         self.pretrained_check = get_checkpoint_path(config.pretrained_model)
 
@@ -55,6 +55,11 @@ class Solver(object):
     def data_to_device(self, vars, state):
         # 이거 뭔가 다른 경우에도 쓸 수 있도록 특졍 변수에 결과를 append 하는 식으로 해서 return 하는식이 더 좋을듯
         spec, spk_emb, phones, txt_feat, emotion_lb = vars
+
+        #if state == "train":
+
+
+        #elif state == "test":
 
         spec = spec.to(self.device)
 
@@ -96,6 +101,75 @@ class Solver(object):
 
         return n_tp, n_tp_fn
 
+
+    def uttr_eval(self, loader_type):
+        uttr_eval_tp = [0 for i in range(self.config.n_classes)]
+        uttr_eval_tp_fn = [0 for i in range(self.config.n_classes)]
+
+        uttr_eval_ua = 0.0
+
+        n_fold = self.config.test_dir.rsplit('/', 2)[1]
+
+        with torch.no_grad():
+            if loader_type == "train":
+                data_loader = self.train_eval
+            elif loader_type == "test":
+                data_loader = self.test_loader
+
+            helper.logger("info", "[INFO] Fold{} start segment-base evaluation...".format(n_fold))
+            inf_start_time = time.time()
+
+            self.model.eval()
+            for batch_id, batch in enumerate(data_loader):
+                self.optimizer.zero_grad()
+
+                if self.config.speech_input == "wav2vec":
+                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
+                elif self.config.speech_input == "spec":
+                    spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
+                    wav2vec_feat = None
+
+                spk_emb = spk_emb.to(self.device)
+                if self.device.type != "cpu":
+                    spk_emb = spk_emb.type(torch.cuda.FloatTensor)
+
+                # map the labels to numpy
+                emotion_lb = emotion_lb.numpy()[0]
+
+                emo_preds = list()
+
+                for spec, wav2vec_feat in zip(spec, wav2vec_feat):
+                    spec = spec.to(self.device)
+                    wav2vec_feat = wav2vec_feat.to(self.device)
+                    if self.device.type != "cpu":
+                        spec = spec.type(torch.cuda.FloatTensor)
+                        wav2vec_feat = wav2vec_feat.to(self.device)
+
+                    emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask)
+
+                    emo_pred = emo_pred.detach().cpu().numpy()
+                    emo_pred = emo_pred[0]
+
+
+                    if len(emo_preds) == 0:
+                        emo_preds = emo_pred
+                    else:
+                        emo_preds = [x+y for x,y in zip(emo_pred, emo_preds)]
+
+                if(len(emo_preds) > 0):
+                    uttr_eval_ua += self.calc_UA(emo_preds)
+
+                tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
+                uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
+                uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
+            print("[fold{} eval UA {} eval WA {}]".format(n_fold, uttr_eval_ua / (batch_id + 1),
+                                                          sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)))
+            inf = time.time() - inf_start_time
+            inf = str(datetime.timedelta(seconds=inf))[:-7]
+            helper.logger("info", "[TIME] Eval inference time {}".format(inf))
+            helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, uttr_eval_ua / (batch_id + 1),
+                                                                             sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)))
+
     def eval(self, loader_type):
 
         eval_tp = [0 for i in range(self.config.n_classes)]
@@ -120,7 +194,7 @@ class Solver(object):
                 self.optimizer.zero_grad() # 여기서 하는것 크게 의미 없긴함
 
                 if self.config.speech_input == "wav2vec":
-                    spec, spk_emb, phones, txt_feat, emotion_lb, wav2vec_feat = batch.values()
+                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
                     wav2vec_feat = wav2vec_feat.to(self.device)
                     if self.device.type != "cpu":
                         wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
@@ -132,7 +206,7 @@ class Solver(object):
                                                state="test")
                 spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
 
-                emotion_logits = self.model(spec, spk_emb, None, phones, wav2vec_feat, txt_feat)
+                emotion_logits = self.model(spec, spk_emb, None, phones, wav2vec_feat, txt_feat, attn_mask)
 
                 eval_ua += self.calc_UA(eval_ua)
 
@@ -176,7 +250,7 @@ class Solver(object):
                 self.optimizer.zero_grad()
 
                 if self.config.speech_input == "wav2vec":
-                    spec, spk_emb, phones, txt_feat, emotion_lb, wav2vec_feat = batch.values()
+                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
                     wav2vec_feat = wav2vec_feat.to(self.device)
                     if self.device.type != "cpu":
                         wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
@@ -188,7 +262,7 @@ class Solver(object):
                                                state="train")
                 spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
 
-                spec_out, post_spec_out, emotion_logits = self.model(spec, spk_emb, spk_emb, phones, wav2vec_feat, txt_feat)
+                spec_out, post_spec_out, emotion_logits = self.model(spec, spk_emb, spk_emb, phones, wav2vec_feat, txt_feat, attn_mask)
 
                 spec_loss = F.mse_loss(spec, spec_out)
                 post_spec_loss = F.mse_loss(spec, post_spec_out)

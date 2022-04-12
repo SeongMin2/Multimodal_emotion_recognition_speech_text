@@ -13,6 +13,7 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 MODEL_TYPE = "facebook/wav2vec2-large-lv60"
 
+
 a="hi"
 b="hi"
 
