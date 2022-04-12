@@ -4,7 +4,7 @@ from model.multimodal import Multimodal
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 # writer = SummaryWriter()
 import parser_helper as helper
 import time
@@ -139,7 +139,7 @@ class Solver(object):
                 if self.device.type != "cpu":
                     spk_emb = spk_emb.type(torch.cuda.FloatTensor)
                     txt_feat = txt_feat.type(torch.cuda.FloatTensor)
-                    attn_mask = attn_mask.type(torch.cuda.InTensor)
+                    attn_mask = attn_mask.type(torch.cuda.IntTensor)
 
                 emo_preds = list()
 
@@ -166,8 +166,15 @@ class Solver(object):
                     uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
                     uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
 
-            uttr_eval_ua = uttr_eval_ua / (batch_id + 1)
-            uttr_eval_wa = sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)
+            # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
+            if 0 in uttr_eval_tp_fn:
+                for i, value in enumerate(uttr_eval_tp_fn):
+                    if value == 0:
+                        uttr_eval_tp_fn[i] = 1
+
+
+            uttr_eval_ua = round(uttr_eval_ua / (batch_id + 1), 4)
+            uttr_eval_wa = round(sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp), 4)
 
             print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
             inf = time.time() - inf_start_time
@@ -255,7 +262,10 @@ class Solver(object):
 
             # To calculate Unweighted Accuracy
             train_ua = 0.0
+            train_wa = 0.0
             test_ua = 0.0
+            test_wa = 0.0
+
 
             self.model.train()
 
@@ -308,8 +318,14 @@ class Solver(object):
                                                                                                                          (spec_loss + post_spec_loss)/2,
                                                                                                                          train_ua / (batch_id + 1)))
 
-            train_ua = train_ua / (batch_id + 1)
-            train_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
+            # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
+            if 0 in train_tp_fn:
+                for i, value in enumerate(train_tp_fn):
+                    if value == 0:
+                        train_tp_fn[i] = 1
+
+            train_ua = round(train_ua / (batch_id + 1),4)
+            train_wa = round(sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp), 4)  # average recall per class # 소수점 4자리까지 출력
             print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]

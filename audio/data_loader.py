@@ -55,7 +55,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
                                  drop_last=False,
                                  worker_init_fn=worker_init_fn,
                                  pin_memory=True)
-
+    '''
     # training dataset with batch size = 1
     worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
     train_1batch = data.DataLoader(dataset=train_dataset,
@@ -65,8 +65,9 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
                                    drop_last=False,
                                    worker_init_fn=worker_init_fn,
                                    pin_memory=True)
+    '''
 
-    return train_loader, test_loader, train_eval, train_1batch
+    return train_loader, test_loader, train_eval
 
 
 def get_train_data_loaders(config, train_npz, test_npz, num_workers=4):
