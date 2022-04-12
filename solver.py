@@ -183,63 +183,7 @@ class Solver(object):
             helper.logger("info", "[EPOCH] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
 
         return uttr_eval_ua, uttr_eval_wa
-    '''
-    def eval(self, loader_type):
 
-        eval_tp = [0 for i in range(self.config.n_classes)]
-        eval_tp_fn = [0 for i in range(self.config.n_classes)]
-
-        eval_ua = 0.0
-
-        n_fold = self.config.test_dir.rsplit('/', 2)[1]
-
-        with torch.no_grad():
-            if loader_type == "train":
-                data_loader = self.train_batch1
-            elif loader_type == "test":
-                data_loader = self.test_loader
-
-            helper.logger("info", "[INFO] Fold{} start segment-base evaluation...".format(n_fold))
-            inf_start_time = time.time()
-
-            self.model.eval()
-
-            for batch_id, batch in enumerate(data_loader):
-                self.optimizer.zero_grad() # 여기서 하는것 크게 의미 없긴함
-
-                if self.config.speech_input == "wav2vec":
-                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
-                    wav2vec_feat = wav2vec_feat.to(self.device)
-                    if self.device.type != "cpu":
-                        wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
-                elif self.config.speech_input == "spec":
-                    spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
-                    wav2vec_feat = None
-
-                tmp_vars = self.data_to_device(vars=[spec, spk_emb, phones, txt_feat, emotion_lb],
-                                               state="test")
-                spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
-
-                emotion_logits = self.model(spec, spk_emb, None, phones, wav2vec_feat, txt_feat, attn_mask)
-
-                emotion_logits = emotion_logits.detach().cpu()
-                # emotion_lb = emotion_lb.detach().cpu()
-
-                eval_ua += self.calc_UA(eval_ua)
-
-                tmp_tp, tmp_tp_fn = self.calc_WA(emotion_logits, emotion_lb)
-                eval_tp = [x + y for x, y in zip(eval_tp, tmp_tp)]
-                eval_tp_fn = [x + y for x, y in zip(eval_tp_fn, tmp_tp_fn)]
-
-                # 일단 .detach .data() .cpu() .numpy() 이런것들을 하는데 마지막에 결과 나오고 하던데 용도 알아보기
-
-            # eval_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
-            print("[fold{} eval UA {} eval WA {}]".format(n_fold, eval_ua / (batch_id + 1),sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
-            inf = time.time() - inf_start_time
-            inf = str(datetime.timedelta(seconds=inf))[:-7]
-            helper.logger("info", "[TIME] Eval inference time {}".format(inf))
-            helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, eval_ua / (batch_id + 1), sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
-    '''
     def train(self):
         data_loader = self.train_loader
         if not Path(self.config.rs_save_path).exists():
@@ -346,3 +290,61 @@ class Solver(object):
                        str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
                            self.config.dim_neck) + ".ckpt")
         eval_records.to_csv(self.config.rs_save_path, index=False)
+
+    '''
+    def eval(self, loader_type):
+
+        eval_tp = [0 for i in range(self.config.n_classes)]
+        eval_tp_fn = [0 for i in range(self.config.n_classes)]
+
+        eval_ua = 0.0
+
+        n_fold = self.config.test_dir.rsplit('/', 2)[1]
+
+        with torch.no_grad():
+            if loader_type == "train":
+                data_loader = self.train_batch1
+            elif loader_type == "test":
+                data_loader = self.test_loader
+
+            helper.logger("info", "[INFO] Fold{} start segment-base evaluation...".format(n_fold))
+            inf_start_time = time.time()
+
+            self.model.eval()
+
+            for batch_id, batch in enumerate(data_loader):
+                self.optimizer.zero_grad() # 여기서 하는것 크게 의미 없긴함
+
+                if self.config.speech_input == "wav2vec":
+                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
+                    wav2vec_feat = wav2vec_feat.to(self.device)
+                    if self.device.type != "cpu":
+                        wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
+                elif self.config.speech_input == "spec":
+                    spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
+                    wav2vec_feat = None
+
+                tmp_vars = self.data_to_device(vars=[spec, spk_emb, phones, txt_feat, emotion_lb],
+                                               state="test")
+                spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
+
+                emotion_logits = self.model(spec, spk_emb, None, phones, wav2vec_feat, txt_feat, attn_mask)
+
+                emotion_logits = emotion_logits.detach().cpu()
+                # emotion_lb = emotion_lb.detach().cpu()
+
+                eval_ua += self.calc_UA(eval_ua)
+
+                tmp_tp, tmp_tp_fn = self.calc_WA(emotion_logits, emotion_lb)
+                eval_tp = [x + y for x, y in zip(eval_tp, tmp_tp)]
+                eval_tp_fn = [x + y for x, y in zip(eval_tp_fn, tmp_tp_fn)]
+
+                # 일단 .detach .data() .cpu() .numpy() 이런것들을 하는데 마지막에 결과 나오고 하던데 용도 알아보기
+
+            # eval_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
+            print("[fold{} eval UA {} eval WA {}]".format(n_fold, eval_ua / (batch_id + 1),sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
+            inf = time.time() - inf_start_time
+            inf = str(datetime.timedelta(seconds=inf))[:-7]
+            helper.logger("info", "[TIME] Eval inference time {}".format(inf))
+            helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, eval_ua / (batch_id + 1), sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
+    '''
