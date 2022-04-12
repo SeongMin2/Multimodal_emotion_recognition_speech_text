@@ -1,10 +1,13 @@
 # import sys
 # from os.path import dirname, join, abspath
 # sys.path.insert(0, abspath(join(dirname(__file__), '')))
+import torch
 from audio.data_loader import get_data_loaders, get_train_data_loaders
 import parser_helper as helper
 from model.multimodal import Multimodal
 from solver import Solver
+import random
+import numpy as np
 
 from torch.backends import cudnn
 
@@ -49,3 +52,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+    torch.backends.cudnn.deterministic = True
+    random.seed(1)
+    torch.manual_seed(1)
+    torch.cuda.manual_seed(1)
+    np.random.seed(1)
