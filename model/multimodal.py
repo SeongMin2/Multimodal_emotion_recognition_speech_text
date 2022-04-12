@@ -54,6 +54,8 @@ class Multimodal(nn.Module):
     def __init__(self, config):
         super(Multimodal, self).__init__()
 
+        self.device = config.device
+
         self.encoder = get_Encoder(config)
         self.ser_tail = get_SER_Tail(config)
         self.phone_encoder = get_Phone_Encoder(config)
@@ -87,7 +89,32 @@ class Multimodal(nn.Module):
         self.n_heads = config.n_heads
         self.batch_size = config.batch_size
 
-    def forward(self, spec, spk_emb, spk_emb_dc ,phones, wav2vec_feat, txt_feat, attn_mask):
+    def make_attn_mask(self, len, mask_start_idx):
+        attn_mask = [1 for i in range(len)]
+        if ((len - 1) - mask_start_idx) >= 0 :
+            for idx in range(mask_start_idx, len):
+                attn_mask[idx] = 0
+
+        return attn_mask
+
+    def get_attn_mask(self, txt_len, spch_len, attn_mask_ids):
+        txt_attn_mask = list()
+        spch_attn_mask = list()
+        for ids in attn_mask_ids:
+            txt_attn_mask.append(self.make_attn_mask(txt_len, ids[0]))
+            spch_attn_mask.append(self.make_attn_mask(spch_len, ids[1]))
+
+        txt_attn_mask = torch.tensor(txt_attn_mask).to(self.device)
+        spch_attn_mask = torch.tensor(spch_attn_mask).to(self.device)
+        if self.device.type != "cpu": # 이거 용도 파악 정확히 못함
+            txt_attn_mask = txt_attn_mask.type(torch.cuda.IntTensor)
+            spch_attn_mask = spch_attn_mask.type(torch.cuda.IntTensor)
+
+        return txt_attn_mask, spch_attn_mask
+
+
+    def forward(self, spec, spk_emb, spk_emb_dc ,phones, wav2vec_feat, txt_feat, attn_mask_ids):
+
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
         # encoder_outputs : (batch, 96, 2*d)
 
@@ -98,8 +125,10 @@ class Multimodal(nn.Module):
         ser_feat = ser_feat.transpose(1,2)
         ter_feat = ter_feat.transpose(1,2)
 
-        cross_attn_s = self.cross_attn_s_md(ser_feat, ter_feat, ter_feat, attn_mask)  # attn_mask는 key에 대해서 진행되는것임
-        cross_attn_t = self.cross_attn_t_md(ter_feat, ser_feat, ser_feat)
+        txt_attn_mask, spch_attn_mask = self.get_attn_mask(txt_feat.shape[1], spec.shape[1],attn_mask_ids)
+
+        cross_attn_s = self.cross_attn_s_md(ser_feat, ter_feat, ter_feat, txt_attn_mask)  # attn_mask는 key에 대해서 진행되는것임
+        cross_attn_t = self.cross_attn_t_md(ter_feat, ser_feat, ser_feat, spch_attn_mask)
         # cross_attn2 : (batch, 122, 128)
 
         src_s = self.layer_norm_s(ser_feat + cross_attn_s)

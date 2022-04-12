@@ -20,6 +20,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     helper.logger("info", "[INFO] Data loading...")
 
     train_dataset = SpeechTextDataset(config,"train",train_dir, wav_dir, train_npz, 16000)
+    # a = train_dataset[0]
 
     test_dataset = SpeechTextDataset(config, "test", test_dir, wav_dir, test_npz, 16000)
 

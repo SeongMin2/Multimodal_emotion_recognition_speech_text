@@ -107,7 +107,7 @@ class SpeechTextDataset(Dataset):
                 "spk_emb": features["spk_emb"],
                 "phones": features["phones"],
                 "txt_feat" : features["txt_feat"],
-                "attn_mask" : features["attn_mask"],
+                "attn_mask_ids" : features["attn_mask_ids"],
                 "emotion_lb": features["emotion_lb"],
                 "wav2vec_feat": features["wav2vec_feat"]
             }
@@ -119,7 +119,8 @@ class SpeechTextDataset(Dataset):
                 "spk_emb": features["spk_emb"],
                 "phones": features["phones"],
                 "txt_feat" : features["txt_feat"],
-                "emotion_lb": features["emotion_lb"]
+                "emotion_lb": features["emotion_lb"],
+                "attn_mask_ids": features["attn_mask_ids"]
             }
 
     def zero_pad(self, array, len_pad):
@@ -133,6 +134,7 @@ class SpeechTextDataset(Dataset):
         len_pad = gt_config["len_crop"] - features["spec"].shape[0]
         features['spec'] = self.zero_pad(features["spec"], len_pad)
         features["phones"] = self.zero_pad(features["phones"], len_pad)
+
 
         if gt_config["speech_input"] == "wav2vec":
             features["wav2vec_feat"] = np.pad(features["wav2vec_feat"], ((0, 0), (0, len_pad), (0, 0)), "constant")
@@ -229,9 +231,9 @@ class SpeechTextDataset(Dataset):
 
     def _parse_transcript(self, transcript: str):
 
-        feature, attn_mask = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
+        feature, mask_s_idx = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
 
-        return feature, attn_mask
+        return feature, mask_s_idx
 
     def __getitem__(self, idx): # -> dict:
         """ Provides paif of audio & transcript """
@@ -251,13 +253,18 @@ class SpeechTextDataset(Dataset):
 
         wav2vec_feat = self._parse_wav(wav_path) # wav2vec feature results
 
-        txt_feat, attn_mask = self._parse_transcript(txt)
+        txt_feat, txt_mask_s_idx = self._parse_transcript(txt)
         # text preprocessing
         txt_feat = txt_feat[1:-1]
-        attn_mask = attn_mask[1:-1]
+        txt_mask_s_idx -= 1
         # 여러 tokenizer에 따라서 padding 진행하긴하지만 애초에 tokenizer에서 max_length박아서 padding해서 일단 안한다.
 
         txt_feat = torch.from_numpy(txt_feat)
+
+        spch_mask_s_idx = self.len_crop # padding 안하는 경우
+        pad_len = self.len_crop - spec.shape[0]
+        if pad_len > 0:
+            spch_mask_s_idx = self.len_crop - pad_len
 
 
         features = {}
@@ -267,7 +274,7 @@ class SpeechTextDataset(Dataset):
         features["wav2vec_feat"] = wav2vec_feat
         features["text"] = txt
         features['txt_feat'] = txt_feat
-        features['attn_mask'] = attn_mask
+        features['attn_mask_ids'] = np.array([txt_mask_s_idx, spch_mask_s_idx])
         features["emotion_lb"] = emotion_class
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
@@ -289,6 +296,7 @@ class SpeechTextDataset(Dataset):
             pass
 
         return (self.select_data_sample_to_return(gt_config, features))
+        # return 할 때는 무조건 최소 numpy로 해야 함 list로 하면 dataloader에서 불러올 때 기괴하게 리스트 안에 tensor 있고 그럼
 
     def __len__(self):
         return len(self.dataset)

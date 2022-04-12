@@ -13,6 +13,12 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 import pandas as pd
 MODEL_TYPE = "facebook/wav2vec2-large-lv60"
+a = [1,1,1,1,1,1]
+
+if 0 in torch.tensor(a):
+    print('hi')
+tokenizer = AutoTokenizer.from_pretrained("bert-large-uncased")
+encoded_input = tokenizer("hello who are you", padding="max_length", max_length=10, return_tensors='pt')
 
 df = pd.DataFrame(index=['a','b','c'])
 

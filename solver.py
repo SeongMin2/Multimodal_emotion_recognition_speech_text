@@ -57,7 +57,7 @@ class Solver(object):
 
     def data_to_device(self, vars, state):
         # 이거 뭔가 다른 경우에도 쓸 수 있도록 특졍 변수에 결과를 append 하는 식으로 해서 return 하는식이 더 좋을듯
-        spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb = vars
+        spec, spk_emb, phones, txt_feat, emotion_lb = vars
 
         #if state == "train":
 
@@ -68,14 +68,12 @@ class Solver(object):
         spk_emb = spk_emb.to(self.device)
         phones = phones.to(self.device)
         txt_feat = txt_feat.to(self.device)
-        attn_mask = attn_mask.to(self.device)
 
         if self.device.type != "cpu": # 이거 용도 파악 정확히 못함
             spec = spec.type(torch.cuda.FloatTensor)
             spk_emb = spk_emb.type(torch.cuda.FloatTensor)
             phones = phones.type(torch.cuda.FloatTensor)
             txt_feat = txt_feat.type(torch.cuda.FloatTensor)
-            attn_mask = attn_mask.type(torch.cuda.IntTensor)
 
         if state == "train":
             emotion_lb = emotion_lb.to(self.device)
@@ -84,7 +82,7 @@ class Solver(object):
         elif state == "test":
             pass
 
-        return spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb
+        return spec, spk_emb, phones, txt_feat, emotion_lb
 
     def calc_UA(self, logit, ground_truth):
         max_vals, max_indices = torch.max(logit, 1)
@@ -128,18 +126,16 @@ class Solver(object):
                 self.optimizer.zero_grad()
 
                 if self.config.speech_input == "wav2vec":
-                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
+                    spec, spk_emb, phones, txt_feat, attn_mask_ids, emotion_lb, wav2vec_feat = batch.values()
                 elif self.config.speech_input == "spec":
-                    spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
+                    spec, spk_emb, phones, txt_feat, attn_mask_ids, emotion_lb = batch.values()
                     wav2vec_feat = None
 
                 spk_emb = spk_emb.to(self.device)
                 txt_feat = txt_feat.to(self.device)
-                attn_mask = attn_mask.to(self.device)
                 if self.device.type != "cpu":
                     spk_emb = spk_emb.type(torch.cuda.FloatTensor)
                     txt_feat = txt_feat.type(torch.cuda.FloatTensor)
-                    attn_mask = attn_mask.type(torch.cuda.IntTensor)
 
                 emo_preds = list()
 
@@ -150,7 +146,7 @@ class Solver(object):
                         spec = spec.type(torch.cuda.FloatTensor)
                         wav2vec_feat = wav2vec_feat.to(self.device)
 
-                    emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask)
+                    emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask_ids)
 
                     emo_pred = emo_pred.detach().cpu()[0]
                     if len(emo_preds) == 0:
@@ -217,19 +213,19 @@ class Solver(object):
                 self.optimizer.zero_grad()
 
                 if self.config.speech_input == "wav2vec":
-                    spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb, wav2vec_feat = batch.values()
+                    spec, spk_emb, phones, txt_feat, attn_mask_ids, emotion_lb, wav2vec_feat = batch.values()
                     wav2vec_feat = wav2vec_feat.to(self.device)
                     if self.device.type != "cpu":
                         wav2vec_feat = wav2vec_feat.type(torch.cuda.FloatTensor)
                 elif self.config.speech_input == "spec":
-                    spec, spk_emb, phones, txt_feat, emotion_lb = batch.values()
+                    spec, spk_emb, phones, txt_feat, attn_mask_ids, emotion_lb = batch.values()
                     wav2vec_feat = None
 
-                tmp_vars = self.data_to_device(vars=[spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb],
+                tmp_vars = self.data_to_device(vars=[spec, spk_emb, phones, txt_feat, emotion_lb],
                                                state="train")
-                spec, spk_emb, phones, txt_feat, attn_mask, emotion_lb = tmp_vars
+                spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
 
-                spec_out, post_spec_out, emotion_logits = self.model(spec, spk_emb, spk_emb, phones, wav2vec_feat, txt_feat, attn_mask)
+                spec_out, post_spec_out, emotion_logits = self.model(spec, spk_emb, spk_emb, phones, wav2vec_feat, txt_feat, attn_mask_ids)
 
                 spec_loss = F.mse_loss(spec, spec_out)
                 post_spec_loss = F.mse_loss(spec, post_spec_out)
