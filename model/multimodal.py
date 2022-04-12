@@ -91,44 +91,6 @@ class Multimodal(nn.Module):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
         # encoder_outputs : (batch, 96, 2*d)
 
-        '''
-        ##########################################
-        #              Down-Sampling             #
-        ##########################################
-
-        # downsampling
-        codes = []
-        out_forward = encoder_outputs[:, :, :self.dim_neck]
-        out_backward = encoder_outputs[:, :, self.dim_neck:]
-
-        # downsample
-        for i in range(0, encoder_outputs.size(1), self.freq):
-            codes.append(torch.cat((out_forward[:, i + self.freq - 1, :], out_backward[:, i, :]), dim=-1))
-
-        ##########################################
-        #              Up-Sampling               #
-        ##########################################
-
-        tmp = []
-
-        for code in codes:
-            tmp.append(code.unsqueeze(1).expand(-1,int(spec.size(1)/len(codes)),-1))
-        up_sampled = torch.cat(tmp, dim=1)
-        # up_sampled : (batch, 96, 16)
-
-        phone_feat = self.phone_encoder(phones)
-        # phone_feat : (batch, 96, 256)
-
-        decoder_input = torch.cat((up_sampled, spk_emb_dc.unsqueeze(1).expand(-1,spec.size(1),-1), phone_feat), dim=-1)
-        # decoder_input : (batch, 96, 512 + 2*d)
-
-        decoder_output = self.decoder(decoder_input)
-        # spec_logits : (batch, 96, 80)
-        # spec : (batch, 96, 80)
-
-        post_output = self.post_net(decoder_output.transpose(1,2))
-        # post_output : (batch, 80, 96) '''
-
         ser_feat = self.ser_tail(encoder_outputs)
         
         ter_feat = self.txt_model(txt_feat)
@@ -150,7 +112,7 @@ class Multimodal(nn.Module):
         src_s = self.glob_avg_pool_s(src_s.transpose(1,2))
         src_t = self.glob_avg_pool_t(src_t.transpose(1,2))
 
-        src = torch.cat((src_s.view(self.batch_size, -1), src_t.view(self.batch_size, -1)), dim=-1)
+        src = torch.cat((src_s.view(src_s.shape[0], -1), src_t.view(src_t.shape[0], -1)), dim=-1)
         # 이후로 classifier 들어가면 됨
 
         output = self.classifier(src)

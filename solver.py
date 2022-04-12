@@ -85,7 +85,7 @@ class Solver(object):
 
     def calc_UA(self, logit, ground_truth):
         max_vals, max_indices = torch.max(logit, 1)
-        ua = (max_indices == ground_truth).sum().detach().cpu().numpy()/max_indices.size()[0]
+        ua = (max_indices == ground_truth).sum().numpy()/max_indices.size()[0]
 
         return ua
 
@@ -94,10 +94,10 @@ class Solver(object):
         n_tp_fn = [0 for k in range(4)]
 
         max_vals, max_indices = torch.max(logit, 1)
-        tmp_correct = (max_indices.detach().cpu().numpy() == ground_truth.detach().cpu().numpy())
-        for i, idx in enumerate(max_indices.detach().cpu().numpy()):
-            n_tp[idx] += tmp_correct[idx]
-            n_tp_fn[ground_truth.detach().cpu().numpy()[i]] += 1 # 흠
+        tmp_correct = (max_indices.numpy() == ground_truth.numpy())
+        for i, idx in enumerate(max_indices.numpy()):
+            n_tp[idx] += tmp_correct[i]
+            n_tp_fn[ground_truth.numpy()[i]] += 1
 
         return n_tp, n_tp_fn
 
@@ -149,7 +149,6 @@ class Solver(object):
 
                     emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask)
 
-                    emo_pred = emo_pred.detach().cpu().numpy()
                     emo_pred = emo_pred[0]
 
 
@@ -159,11 +158,11 @@ class Solver(object):
                         emo_preds = [x+y for x,y in zip(emo_pred, emo_preds)]
 
                 if(len(emo_preds) > 0):
-                    uttr_eval_ua += self.calc_UA(emo_preds)
+                    uttr_eval_ua += self.calc_UA(emo_preds, emotion_lb)
 
-                tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
-                uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
-                uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
+                    tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
+                    uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
+                    uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
             print("[fold{} eval UA {} eval WA {}]".format(n_fold, uttr_eval_ua / (batch_id + 1),
                                                           sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)))
             inf = time.time() - inf_start_time
@@ -275,6 +274,9 @@ class Solver(object):
 
                 total_loss.backward()
                 self.optimizer.step()
+
+                emotion_logits = emotion_logits.detach().cpu()
+                emotion_lb = emotion_lb.detach().cpu()
 
                 train_ua += self.calc_UA(emotion_logits, emotion_lb)
 
