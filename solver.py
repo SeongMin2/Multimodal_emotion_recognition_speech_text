@@ -4,6 +4,8 @@ from model.multimodal import Multimodal
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
+# writer = SummaryWriter()
 import parser_helper as helper
 import time
 import datetime

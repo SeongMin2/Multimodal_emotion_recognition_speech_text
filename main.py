@@ -35,9 +35,6 @@ def model_check(model, train_loader):
     # def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
 
 
-
-
-
 def main():
     config = helper.get_training_config()
     train_loader, test_loader = get_train_data_loaders(config, train_npz, test_npz)
