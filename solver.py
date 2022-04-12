@@ -79,7 +79,7 @@ class Solver(object):
             # emotion_lb = emotion_lb.type(torch.cuda.LongTensor)
             # 왜 IntTensor로 안하는것이지
         elif state == "test":
-            emotion_lb = emotion_lb.numpy()[0]
+            pass
 
         return spec, spk_emb, phones, txt_feat, emotion_lb
 
@@ -135,9 +135,6 @@ class Solver(object):
                     spk_emb = spk_emb.type(torch.cuda.FloatTensor)
                     txt_feat = txt_feat.type(torch.cuda.FloatTensor)
 
-                # map the labels to numpy
-                emotion_lb = emotion_lb.numpy()[0]
-
                 emo_preds = list()
 
                 for spec, wav2vec_feat in zip(spec, wav2vec_feat):
@@ -149,15 +146,14 @@ class Solver(object):
 
                     emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask)
 
-                    emo_pred = emo_pred[0]
-
-
+                    emo_pred = emo_pred.detach().cpu()[0]
                     if len(emo_preds) == 0:
                         emo_preds = emo_pred
                     else:
                         emo_preds = [x+y for x,y in zip(emo_pred, emo_preds)]
 
                 if(len(emo_preds) > 0):
+                    emo_preds = torch.unsqueeze(torch.tensor(emo_preds),0)
                     uttr_eval_ua += self.calc_UA(emo_preds, emotion_lb)
 
                     tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
@@ -170,7 +166,7 @@ class Solver(object):
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
             helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, uttr_eval_ua / (batch_id + 1),
                                                                              sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)))
-
+    '''
     def eval(self, loader_type):
 
         eval_tp = [0 for i in range(self.config.n_classes)]
@@ -209,6 +205,9 @@ class Solver(object):
 
                 emotion_logits = self.model(spec, spk_emb, None, phones, wav2vec_feat, txt_feat, attn_mask)
 
+                emotion_logits = emotion_logits.detach().cpu()
+                # emotion_lb = emotion_lb.detach().cpu()
+
                 eval_ua += self.calc_UA(eval_ua)
 
                 tmp_tp, tmp_tp_fn = self.calc_WA(emotion_logits, emotion_lb)
@@ -223,7 +222,7 @@ class Solver(object):
             inf = str(datetime.timedelta(seconds=inf))[:-7]
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
             helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, eval_ua / (batch_id + 1), sum([x / y for x, y in zip(eval_tp, eval_tp_fn)]) / len(eval_tp)))
-
+    '''
     def train(self):
         data_loader = self.train_loader
         # keys = ['train_loss', 'test_loss']
@@ -304,5 +303,7 @@ class Solver(object):
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
             helper.logger("info","[EPOCH] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua / (batch_id + 1),
                                                                                      sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)))
+
+
             
             # eval 후 torch.save 시전하즈아

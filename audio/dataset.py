@@ -126,7 +126,7 @@ class SpeechTextDataset(Dataset):
         """ Zero pads a 2d array with zeros to the right """
         return np.pad(array, ((0, len_pad), (0, 0)), "constant")
 
-    def zero_pad_feats(self, features, gt_config):
+    def zero_pad_feats(self, features, gt_config, as_list=False):
         """ Zero pads the features that are too short"""
 
         wav2vec_feat = None
@@ -136,6 +136,11 @@ class SpeechTextDataset(Dataset):
 
         if gt_config["speech_input"] == "wav2vec":
             features["wav2vec_feat"] = np.pad(features["wav2vec_feat"], ((0, 0), (0, len_pad), (0, 0)), "constant")
+
+        if as_list:
+            features['spec'] = [features['spec']]
+            features['phones'] = [features['phones']]
+            features['wav2vec_feat'] = [features['wav2vec_feat']]
 
         return features
 
@@ -168,8 +173,7 @@ class SpeechTextDataset(Dataset):
             content_emb.append(features["phones"][seg_i * gt_config["len_crop"]:(seg_i + 1) * gt_config["len_crop"], :])
             if gt_config["speech_input"] == "wav2vec":
                 wav2vec_feat.append(
-                    features["wav2vec_feat"][:, seg_i * gt_config["len_crop"]:(seg_i + 1) * gt_config["len_crop"],
-                    :])
+                    features["wav2vec_feat"][:, seg_i * gt_config["len_crop"]:(seg_i + 1) * gt_config["len_crop"],:])
         # check if there is a last segment that needs padding
         if ((features["spec"].shape[0] - num_segments * gt_config["len_crop"]) > 1):
             len_pad = gt_config["len_crop"] - (features["spec"].shape[0] - gt_config["len_crop"] * num_segments)
@@ -269,7 +273,10 @@ class SpeechTextDataset(Dataset):
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
         # 이거 확인해야함
         if spec.shape[0] < self.len_crop:
-            features = self.zero_pad_feats(features=features, gt_config=gt_config)
+            if self.mode == "train":
+                features = self.zero_pad_feats(features=features, gt_config=gt_config)
+            elif self.mode == "test":
+                features = self.zero_pad_feats(features=features, gt_config=gt_config, as_list=True)
         # if the utterance is too long (crop)
         elif spec.shape[0] > self.len_crop:
             if self.mode == "train":
@@ -280,7 +287,6 @@ class SpeechTextDataset(Dataset):
         # if the utterance has the exact crop size
         else:
             pass
-        #transcript = self._parse_transcript(self.transcripts[idx])
 
         return (self.select_data_sample_to_return(gt_config, features))
 

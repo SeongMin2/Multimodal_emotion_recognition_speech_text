@@ -44,8 +44,8 @@ def main():
     #train_loader, test_loader, train_eval, train_batch1 = get_data_loaders(config, train_npz, test_npz)
     helper.logger("info", "[INFO] Data loading complete!")
     solver = get_solver(config, train_loader, test_loader, None, None)#test_loader, train_eval, train_batch1)
-    #solver.uttr_eval("test")
-    solver.train()
+    solver.uttr_eval("test")
+    # solver.train()
     model = Multimodal(config)
     model_check(model, train_loader)
     pass
