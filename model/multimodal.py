@@ -98,7 +98,7 @@ class Multimodal(nn.Module):
         ser_feat = ser_feat.transpose(1,2)
         ter_feat = ter_feat.transpose(1,2)
 
-        cross_attn_s = self.cross_attn_s_md(ser_feat, ter_feat, ter_feat)
+        cross_attn_s = self.cross_attn_s_md(ser_feat, ter_feat, ter_feat, attn_mask)  # attn_mask는 key에 대해서 진행되는것임
         cross_attn_t = self.cross_attn_t_md(ter_feat, ser_feat, ser_feat)
         # cross_attn2 : (batch, 122, 128)
 

@@ -147,6 +147,7 @@ class Cross_attention(nn.Module):
     def __init__(self, config):
         super(Cross_attention, self).__init__()
 
+
         self.hidden_dim = config.attention_emb  # 임베딩 차원
         self.n_heads = config.n_heads  # 헤드(head)의 개수: 서로 다른 어텐션(attention) 컨셉의 수
         self.head_dim = int(config.attention_emb / config.n_heads) # head의 dim을 나눠줄 필요가 없거든
@@ -163,7 +164,7 @@ class Cross_attention(nn.Module):
 
         self.scale = torch.sqrt(torch.FloatTensor([self.head_dim])).to(config.device)
 
-    def Scaled_Dot_Product_attention(self, query, key, value, mask=None):
+    def Scaled_Dot_Product_attention(self, query, key, value, mask):
 
         alpha = torch.matmul(query, key.permute(0, 1, 3, 2)) / self.scale
         '''
@@ -172,6 +173,9 @@ class Cross_attention(nn.Module):
             #alpha = alpha.masked_fill(mask == 0, -1e10)
             pass
         '''
+        if mask is not None:
+            # 마스크(mask) 값이 0인 부분을 -1e10으로 채우기
+            alpha = alpha.masked_fill(mask.unsqueeze(1).unsqueeze(2) == 0, -1e10)
 
         # 어텐션(attention) 스코어 계산: 각 단어에 대한 확률 값
         alpha = torch.softmax(alpha, dim=-1)
@@ -186,7 +190,7 @@ class Cross_attention(nn.Module):
         return x
 
 
-    def forward(self, query, key, value, mask=None):
+    def forward(self, query, key, value, attn_mask=None):
         batch_size = query.shape[0]
 
         # query: [batch_size, query_len, hidden_dim]
@@ -211,7 +215,7 @@ class Cross_attention(nn.Module):
         # K: [batch_size, n_heads, key_len, head_dim]
         # V: [batch_size, n_heads, value_len, head_dim]
 
-        x = self.Scaled_Dot_Product_attention(Q, K, V)
+        x = self.Scaled_Dot_Product_attention(Q, K, V, attn_mask)
 
         # x: [batch_size, n_heads, query_len, head_dim]
 
