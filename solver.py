@@ -108,7 +108,7 @@ class Solver(object):
 
         uttr_eval_ua = 0.0
 
-        n_fold = self.config.test_dir.rsplit('/', 2)[1]
+        n_fold = self.config.test_dir.rsplit('/', 2)[1][4]
 
         with torch.no_grad():
             if loader_type == "train":
@@ -130,8 +130,10 @@ class Solver(object):
                     wav2vec_feat = None
 
                 spk_emb = spk_emb.to(self.device)
+                txt_feat = txt_feat.to(self.device)
                 if self.device.type != "cpu":
                     spk_emb = spk_emb.type(torch.cuda.FloatTensor)
+                    txt_feat = txt_feat.type(torch.cuda.FloatTensor)
 
                 # map the labels to numpy
                 emotion_lb = emotion_lb.numpy()[0]
