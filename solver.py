@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import parser_helper as helper
 import time
 import datetime
+import pandas as pd
 import numpy as np
 import csv
 from tqdm import tqdm
@@ -102,11 +103,12 @@ class Solver(object):
         return n_tp, n_tp_fn
 
 
-    def uttr_eval(self, loader_type):
+    def uttr_eval(self, loader_type, epoch):
         uttr_eval_tp = [0 for i in range(self.config.n_classes)]
         uttr_eval_tp_fn = [0 for i in range(self.config.n_classes)]
 
         uttr_eval_ua = 0.0
+        uttr_eval_wa = 0.0
 
         n_fold = self.config.test_dir.rsplit('/', 2)[1][4]
 
@@ -161,13 +163,17 @@ class Solver(object):
                     tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
                     uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
                     uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
-            print("[fold{} eval UA {} eval WA {}]".format(n_fold, uttr_eval_ua / (batch_id + 1),
-                                                          sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)))
+
+            uttr_eval_ua = uttr_eval_ua / (batch_id + 1)
+            uttr_eval_wa = sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)
+
+            print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
             inf = time.time() - inf_start_time
             inf = str(datetime.timedelta(seconds=inf))[:-7]
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
-            helper.logger("info", "[EPOCH] [fold{} eval UA {} WA {}]".format(n_fold, uttr_eval_ua / (batch_id + 1),
-                                                                             sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp)))
+            helper.logger("info", "[EPOCH] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
+
+        return uttr_eval_ua, uttr_eval_wa
     '''
     def eval(self, loader_type):
 
@@ -227,7 +233,10 @@ class Solver(object):
     '''
     def train(self):
         data_loader = self.train_loader
-        # keys = ['train_loss', 'test_loss']
+        if not Path(self.config.rs_save_path).exists():
+            eval_records = pd.DataFrame(index=['fold', 'epoch', 'data_type','batch','UA','WA'])
+        else:
+            eval_records = pd.read_csv(self.config.rs_save_path)
 
         n_fold = self.config.train_dir.rsplit('/', 2)[1][4]
         helper.logger("info","[INFO] Fold{} start training...".format(n_fold))
@@ -297,15 +306,25 @@ class Solver(object):
                                                                                                                          (spec_loss + post_spec_loss)/2,
                                                                                                                          train_ua / (batch_id + 1)))
 
-            # train_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
-            print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua / (batch_id + 1),
-                                                              sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp) ))
+            train_ua = train_ua / (batch_id + 1)
+            train_wa = sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)  # average recall per class
+            print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
-            helper.logger("info","[EPOCH] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua / (batch_id + 1),
-                                                                                     sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp)))
+            helper.logger("info","[EPOCH] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
 
 
-            
-            # eval 후 torch.save 시전하즈아
+            train_eval_ua, train_eval_wa = self.uttr_eval(loader_type = "train", epoch=epoch)
+            test_ua , test_wa = self.uttr_eval(loader_type = "test", epoch = epoch)
+
+            # ['fold', 'epoch', 'data_type','batch','UA','WA']
+            insert_data = {'fold':n_fold,'epoch':epoch+1, 'data_type':"test",'batch':self.config.batch_size, 'UA':test_ua, 'WA':test_wa}
+            eval_records.append(insert_data, ignore_index=True)
+
+            torch.save({"epoch": (epoch + 1),
+                        "model": self.model.state_dict(),
+                        "optimizer_state_dict": self.optimizer.state_dict()},
+                       str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
+                           self.config.dim_neck) + ".ckpt")
+        eval_records.to_csv(self.config.rs_save_path, index=False)

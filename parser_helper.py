@@ -80,7 +80,8 @@ def get_training_config():
     parser.add_argument("--train_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/train", help="Path to train data dir")
     parser.add_argument("--test_dir", type=str, default= ABS_PATH + "/full_data/folds/fold1/test", help="Path to test data dir")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
-    parser.add_argument("--md_save_dir", type=str, default=ABS_PATH + "/model/save", help="Path to Model save dir")
+    parser.add_argument("--md_save_dir", type=str, default=ABS_PATH + "/result/models", help="Path to Model save dir")
+    parser.add_argument("--rs_save_path", type=str, default=ABS_PATH + "/result/results.csv", help="Path to save csv result")
 
     parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
     parser.add_argument("--dropout_ratio", type=float, default= 0.2, help="Ratio of dropout")
