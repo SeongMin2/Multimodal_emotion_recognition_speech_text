@@ -5,7 +5,7 @@ from termcolor import colored
 import os
 import numpy as np
 import torch
-from pathlib import Path
+from torchinfo import summary
 from phoneme.gentle import phone_seq as ph
 import glob
 import pandas as pd
@@ -103,7 +103,7 @@ def get_training_config():
 
     # model feauter size configuration
     parser.add_argument("--conv_dim", type=int, default=512, help="Number of convolution channel or Number of kernels")
-    # Paper에는 2048로 나와 있는데 code는 512를 쓰네 ㅎ
+
     parser.add_argument("--dim_pre", type=int, default=512, help="Length of first LSTM module in Decoder")
 
     parser.add_argument("--txt_feat_model", type=str, default="bert-base-uncased", help='Text model for feature extraction')
@@ -174,3 +174,9 @@ def logger(level_name, message, log_path=LOG_PATH, highlight=True, show_terminal
     on_cyan
     on_white
     '''
+
+def print_model_param_n(model):
+    pytorch_total_params = sum(p.numel() for p in model.parameters())
+    print("model parameter size : ", pytorch_total_params)
+
+    summary(model)

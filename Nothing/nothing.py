@@ -12,7 +12,10 @@ from transformers import AutoModel, AutoTokenizer, AutoConfig
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 import pandas as pd
-MODEL_TYPE = "facebook/wav2vec2-large-lv60"
+
+
+
+
 df = pd.DataFrame(columns = ['a','b','c'])
 df.loc[len(df)] = [1,2,3]
 a = [1,1,1,1,1,1]
