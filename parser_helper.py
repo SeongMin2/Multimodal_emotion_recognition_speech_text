@@ -12,10 +12,6 @@ import pandas as pd
 # from ABS_PATH import ABS_PATH
 
 ABS_PATH = os.path.dirname(os.path.abspath(__file__))
-# 위는 window일 경우임
-# 리눅스의 경우는 다음과 같이 진행함
-# ABS_PATH = os.path.dirname(os.path.abspath(__file__)).rsplit("/", 1)[0]
-# 아님 그럴필요 없음
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")
@@ -145,10 +141,10 @@ def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_termina
                 print(colored(message,'white', 'on_green'))
             else:
                 print(colored(message,'green'))
-    elif level_name == 'training':
+    elif level_name == 'results':
         logging.info(message)
         if show_terminal:
-            print(colored(message, 'blue'))
+            print(colored(message, 'magenta'))
     elif level_name == 'error':
         logging.error(message)
         if show_terminal:

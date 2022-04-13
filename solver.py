@@ -42,7 +42,7 @@ class Solver(object):
 
         self.build_model()
 
-        helper.logger('training', "[INFO] Building model")
+        helper.logger("info", "[INFO] Building model")
 
     def build_model(self):
         self.model = Multimodal(self.config)
@@ -192,7 +192,7 @@ class Solver(object):
             inf = time.time() - inf_start_time
             inf = str(datetime.timedelta(seconds=inf))[:-7]
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
-            helper.logger("info", "[EPOCH] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
+            helper.logger("results", "[RESULT] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
 
         return uttr_eval_ua, uttr_eval_wa
 
@@ -269,7 +269,7 @@ class Solver(object):
                                                                                               emotion_loss.data.cpu().numpy(),
                                                                                               (spec_loss + post_spec_loss)/2,
                                                                                               train_ua / (batch_id + 1)))
-                    helper.logger("training", "[INFO] epoch {} batch id {} cls_loss {} spec_loss {} post_spec_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
+                    helper.logger("results", "[RESULT] epoch {} batch id {} cls_loss {} spec_loss {} post_spec_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
                                                                                                                          emotion_loss.data.cpu().numpy(),
                                                                                                                          spec_loss, post_spec_loss,
                                                                                                                          (spec_loss + post_spec_loss)/2,
@@ -287,7 +287,7 @@ class Solver(object):
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
-            helper.logger("info","[EPOCH] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
+            helper.logger("results","[RESULT] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
 
 
             train_eval_ua, train_eval_wa = self.uttr_eval(loader_type = "train", epoch=epoch)
