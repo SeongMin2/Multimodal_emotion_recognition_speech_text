@@ -65,7 +65,7 @@ class SpeechTextDataset(Dataset):
             dataset.remove(None)
 
 
-        self.dataset = list(dataset) # 여기에서의 길이를 조절하여서 실험하기
+        self.dataset = list(dataset[0:4]) # 여기에서의 길이를 조절하여서 실험하기
         self.num_tokens = len(self.dataset)
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.txt_feat_model)

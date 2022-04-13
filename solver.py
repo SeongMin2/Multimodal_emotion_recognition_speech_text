@@ -183,7 +183,7 @@ class Solver(object):
     def train(self):
         data_loader = self.train_loader
         if not Path(self.config.rs_save_path).exists():
-            eval_records = pd.DataFrame(index=['fold', 'epoch', 'data_type','batch','UA','WA'])
+            eval_records = pd.DataFrame(columns=['fold', 'epoch', 'data_type','batch','UA','WA'], )
         else:
             eval_records = pd.read_csv(self.config.rs_save_path)
 
@@ -277,8 +277,7 @@ class Solver(object):
             test_ua , test_wa = self.uttr_eval(loader_type = "test", epoch = epoch)
 
             # ['fold', 'epoch', 'data_type','batch','UA','WA']
-            insert_data = {'fold':n_fold,'epoch':epoch+1, 'data_type':"test",'batch':self.config.batch_size, 'UA':test_ua, 'WA':test_wa}
-            eval_records.append(insert_data, ignore_index=True)
+            eval_records.loc[len(eval_records)] = [n_fold, epoch+1, "test", self.config.batch_size, test_ua, test_wa]
 
             torch.save({"epoch": (epoch + 1),
                         "model": self.model.state_dict(),

@@ -61,8 +61,8 @@ def main():
     helper.logger("info", "[INFO] Data loading complete!")
     solver = get_solver(config, train_loader, test_loader, train_eval, None)#test_loader, train_eval, train_batch1)
     solver.train()
-    model = Multimodal(config)
-    model_check(model, train_loader)
+    #model = Multimodal(config)
+    #model_check(model, train_loader)
     pass
 
 

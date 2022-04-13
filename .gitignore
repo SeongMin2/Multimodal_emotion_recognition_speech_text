@@ -15,6 +15,7 @@ extraction/
 data/
 full_data/
 ABS_PATH.py
+result/
 
 phoneme/gentle/align_results/
 
