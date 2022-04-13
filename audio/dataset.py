@@ -276,6 +276,7 @@ class SpeechTextDataset(Dataset):
         features['txt_feat'] = txt_feat
         features['attn_mask_ids'] = np.array([txt_mask_s_idx, spch_mask_s_idx])
         features["emotion_lb"] = emotion_class
+        print(txt)
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
         # 이거 확인해야함

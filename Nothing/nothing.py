@@ -15,6 +15,10 @@ import pandas as pd
 MODEL_TYPE = "facebook/wav2vec2-large-lv60"
 a = [1,1,1,1,1,1]
 
+# torch.manual_seed(1)
+layer = nn.Linear(3,5)
+
+
 if 0 in torch.tensor(a):
     print('hi')
 tokenizer = AutoTokenizer.from_pretrained("bert-large-uncased")

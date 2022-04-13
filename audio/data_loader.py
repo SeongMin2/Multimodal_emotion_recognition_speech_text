@@ -10,7 +10,7 @@ import parser_helper as helper
 # 생각해보니까 make_spec할 때 spectrum 잘 만들어주는데 collate_fn이 필요 없지 않나..
 # 그렇다면 make_spect는 audio마다 길이가 다른데 어떻게 처리한지 한 번 확인해봐야 할듯
 # 확인해보니까 spec shape 다 다름 따라서 collate_fn 해야함
-def get_data_loaders(config, train_npz, test_npz, num_workers=4):
+def get_data_loaders(config, train_npz, test_npz, num_workers=0):
 
     train_dir = config.train_dir
     test_dir = config.test_dir
@@ -31,8 +31,8 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     worker_init_fn = lambda x: np.random.seed((torch.initial_seed()) % (2 ** 32))
     train_loader = data.DataLoader(dataset=train_dataset,
                                    batch_size=batch_size,
-                                   shuffle=True,
-                                   # num_workers=num_workers,
+                                   shuffle=False,
+                                   num_workers=num_workers,
                                    drop_last=True,
                                    worker_init_fn=worker_init_fn,
                                    pin_memory=True)
@@ -42,7 +42,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     test_loader = data.DataLoader(dataset=test_dataset,
                                   batch_size=1,
                                   shuffle=False,
-                                  # num_workers=num_workers,
+                                  num_workers=num_workers,
                                   drop_last=False,
                                   worker_init_fn=worker_init_fn,
                                   pin_memory=True)
@@ -52,7 +52,7 @@ def get_data_loaders(config, train_npz, test_npz, num_workers=4):
     train_eval = data.DataLoader(dataset=train_eval_dataset,
                                  batch_size=1,
                                  shuffle=False,
-                                 # num_workers=num_workers,
+                                 num_workers=num_workers,
                                  drop_last=False,
                                  worker_init_fn=worker_init_fn,
                                  pin_memory=True)

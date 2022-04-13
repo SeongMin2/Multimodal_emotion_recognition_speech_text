@@ -37,8 +37,24 @@ def model_check(model, train_loader):
     result = model(feat['spec'], feat['spk_emb'], feat['spk_emb'], feat['phones'], feat['wav2vec_feat'], feat['txt_feat'])
     # def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
 
+def set_seed(seed: int = 42):
+    torch.manual_seed(1)  # 이놈이 초기 weight 값 들도 모두 고정 시킴
+    '''
+    이거 두개는 연산 속도 느려져서 연구 실험 후반 단계에 사용하라고 권장함
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False 
+    음 CuDNN의 randomness를 제어함
+    '''
+    random.seed(1)
+    np.random.seed(1)
+
+    # 동일한 조건에서 학습 시 weight가 변화하지 않게 하는 옵션
+    torch.cuda.manual_seed(1)
+    torch.cuda.manual_seed_all(1)  # if use multi-GPU
 
 def main():
+    set_seed(42)
+
     config = helper.get_training_config()
     #train_loader, test_loader = get_train_data_loaders(config, train_npz, test_npz)
     train_loader, test_loader, train_eval= get_data_loaders(config, train_npz, test_npz)
@@ -52,8 +68,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    torch.backends.cudnn.deterministic = True
-    random.seed(1)
-    torch.manual_seed(1)
-    torch.cuda.manual_seed(1)
-    np.random.seed(1)
+    # 여기다 seed를 처리하면 안됨, 모델에 닿지도 않음
