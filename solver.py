@@ -132,7 +132,7 @@ class Solver(object):
             elif loader_type == "test":
                 data_loader = self.test_loader
 
-            helper.logger("info", "[INFO] Fold{} start segment-base evaluation...".format(n_fold))
+            helper.logger("info", "[INFO] Fold{} start uttr-level {} evaluation...".format(n_fold, loader_type))
             inf_start_time = time.time()
 
             self.model.eval()
@@ -188,7 +188,7 @@ class Solver(object):
             uttr_eval_ua = round(uttr_eval_ua / (batch_id + 1), 4)
             uttr_eval_wa = round(sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp), 4)
 
-            print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
+            # print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
             inf = time.time() - inf_start_time
             inf = str(datetime.timedelta(seconds=inf))[:-7]
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
@@ -265,10 +265,11 @@ class Solver(object):
 
 
                 if (batch_id+1) % self.config.log_interval == 0:
-                    print("epoch {} batch id {} cls_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
+                    '''print("epoch {} batch id {} cls_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
                                                                                               emotion_loss.data.cpu().numpy(),
                                                                                               (spec_loss + post_spec_loss)/2,
-                                                                                              train_ua / (batch_id + 1)))
+                                                                                              train_ua / (batch_id + 1)))'''
+
                     helper.logger("results", "[RESULT] epoch {} batch id {} cls_loss {} spec_loss {} post_spec_loss {} const_loss {} train UA {}".format(epoch + 1, batch_id + 1,
                                                                                                                          emotion_loss.data.cpu().numpy(),
                                                                                                                          spec_loss, post_spec_loss,
@@ -283,7 +284,7 @@ class Solver(object):
 
             train_ua = round(train_ua / (batch_id + 1),4)
             train_wa = round(sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp), 4)  # average recall per class # 소수점 4자리까지 출력
-            print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
+            # print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
