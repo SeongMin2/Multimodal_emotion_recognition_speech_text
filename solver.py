@@ -4,6 +4,7 @@ from model.multimodal import Multimodal
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from transformers.optimization import get_cosine_schedule_with_warmup
 # from torch.utils.tensorboard import SummaryWriter
 # writer = SummaryWriter()
 import parser_helper as helper
@@ -14,6 +15,7 @@ import numpy as np
 import csv
 from tqdm import tqdm
 from pathlib import Path
+
 
 def get_checkpoint_path(checkpoint_path_str):
     """ Return the checkpoint path if it exists """
@@ -44,9 +46,21 @@ class Solver(object):
 
     def build_model(self):
         self.model = Multimodal(self.config)
+
+        no_decay = ['bias', 'LayerNorm.weight']
+        optimizer_grouped_parameters = [
+            {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
+            {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+        ]
+
+        t_total = len(self.train_loader) * self.config.n_epochs
+        warmup_step = int(t_total * self.config.warmup_ratio)
+
         self.model.to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+        self.optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=self.config.learning_rate)
+        self.scheduler = get_cosine_schedule_with_warmup(self.optimizer, num_warmup_steps= warmup_step, num_training_steps= t_total )
         self.loss_fn = nn.CrossEntropyLoss()
+
 
         if not (self.pretrained_check == None):  # 만약 pretrained 된 모델 파일이 존재한다면,
             #with open(self.test_out_file, "a") as txt_f:
@@ -191,7 +205,7 @@ class Solver(object):
         helper.logger("info","[INFO] Fold{} start training...".format(n_fold))
         start_time = time.time()
 
-        for epoch in range(self.config.epochs):
+        for epoch in range(self.config.n_epochs):
             epc_start_time = time.time()
 
             # To calculate Weighted Accuracy
@@ -236,6 +250,7 @@ class Solver(object):
 
                 total_loss.backward()
                 self.optimizer.step()
+                self.scheduler.step()
 
                 emotion_logits = emotion_logits.detach().cpu()
                 emotion_lb = emotion_lb.detach().cpu()

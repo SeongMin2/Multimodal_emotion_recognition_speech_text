@@ -88,7 +88,8 @@ def get_training_config():
     parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
-    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
+    parser.add_argument("--n_epochs", type=int, default=1)
 
     parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
 
