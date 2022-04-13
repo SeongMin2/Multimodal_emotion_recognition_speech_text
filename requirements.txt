@@ -9,4 +9,5 @@ SoundFile==0.10.3.post1
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==1.10.0+cu102
 torchaudio==0.10.0+cu113
+torchinfo==1.6.5
 tqdm==4.63.0
