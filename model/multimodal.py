@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import sys
 import model.models as models
 import model.attention as attention
 

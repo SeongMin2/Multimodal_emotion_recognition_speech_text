@@ -1,11 +1,3 @@
-from transformers import AutoModel, AutoTokenizer
-import sys
-import argparse
-import parser_helper as helper
-
-MODEL_NAME = "bert-base-uncased"
-FEAT_TYPE = "last_hidden_state"
-
 def extract_features(text, max_seq_len, tokenizer, text_model):
     text = text.lower()
 

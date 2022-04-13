@@ -1,14 +1,9 @@
-# import sys
-# from os.path import dirname, join, abspath
-# sys.path.insert(0, abspath(join(dirname(__file__), '')))
 import torch
 from audio.data_loader import get_data_loaders, get_train_data_loaders
 import parser_helper as helper
-from model.multimodal import Multimodal
 from solver import Solver
 import random
 import numpy as np
-
 from torch.backends import cudnn
 
 # Name of the train and test pkl files

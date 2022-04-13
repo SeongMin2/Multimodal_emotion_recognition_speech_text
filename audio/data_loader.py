@@ -2,8 +2,6 @@ from torch.utils import data
 import torch
 from torch.utils.data import DataLoader
 import numpy as np
-import pickle
-import os, math, sys
 from audio.dataset import SpeechTextDataset
 import parser_helper as helper
 

@@ -46,11 +46,9 @@ def get_config():
 
     parser.add_argument("--mode", type=str, default="test", help="train or test mode")
     parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/full_data/folds/fold5/test", help="Path to spectrum files")
-    # parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/audio/spectrum", help="Path to spectrum files")
     parser.add_argument("--phone_dir", type=str, default=ABS_PATH + "/phoneme/gentle/align_results", help="path to the phonetic alignment json files")
     parser.add_argument("--phone_dict_file", type=str, default=ABS_PATH + "/phoneme/gentle/phone_dict.csv",help="path to phone dictionary file")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
-    # parser.add_argument("--npz_dir", type=str, default=ABS_PATH + "/full_data", help="Path to npz file")
     parser.add_argument("--freq", type=int, default=16000, help="speech frequency")
     parser.add_argument("--hop_len", type=int, default=320, help="hop length")
     parser.add_argument("--folds_dir", type=str, default=ABS_PATH + "/full_data/folds", help="/audio/organize_folds.py")

@@ -1,11 +1,8 @@
 import os, sys
-import random
 import torch
 import numpy as np
 import logging
 import math
-# from omegaconf import DictConfig
-from torch import Tensor
 import parser_helper as helper
 from torch.utils.data import Dataset
 from .wav2vec.extract_wav2vec2 import apply_wav2vec
@@ -54,7 +51,7 @@ class SpeechTextDataset(Dataset):
             element[3] = self._get_emotion_class(element[3]) # element[3] is emotion class
 
             # load the spectrogram
-            spec = np.load(os.path.join(self.dataset_dir, element[0]))
+            spec = np.load(os.path.join(self.dataset_dir, element[0].replace("\\","/")))
 
             # check if audio and features have the same shape
             self.check_audio_and_feat_shape(audio=spec, element=element)
@@ -251,7 +248,7 @@ class SpeechTextDataset(Dataset):
         wav_path = str(npy_path[:-4] + ".wav")
         wav_path = os.path.join(self.wav_dir, wav_path)
 
-        wav2vec_feat = self._parse_wav(wav_path) # wav2vec feature results
+        wav2vec_feat = self._parse_wav(wav_path.replace("\\", "/")) # wav2vec feature results
 
         txt_feat, txt_mask_s_idx = self._parse_transcript(txt)
         # text preprocessing

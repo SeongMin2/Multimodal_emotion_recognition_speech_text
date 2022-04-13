@@ -1,7 +1,6 @@
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
-import librosa
-import sys, os
+import sys
 import numpy as np
 from .spectrogram_helpers import get_spec
 

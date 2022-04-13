@@ -1,5 +1,4 @@
 import numpy as np
-import soundfile as sf
 from scipy import signal
 from librosa.filters import mel
 

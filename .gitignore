@@ -16,7 +16,8 @@ data/
 full_data/
 ABS_PATH.py
 result/
-requirements.txt
+
+origin_requirements.txt
 
 phoneme/gentle/align_results/
 

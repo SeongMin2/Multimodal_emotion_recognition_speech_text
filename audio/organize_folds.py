@@ -3,7 +3,6 @@
     Description: Organize the spmel directories in the 5 folds
 """
 
-import argparse
 import shutil
 import parser_helper as helper
 
