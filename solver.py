@@ -1,5 +1,3 @@
-import sys
-from os.path import dirname, join, abspath
 from model.multimodal import Multimodal
 import torch
 import torch.nn as nn
@@ -12,7 +10,6 @@ import time
 import datetime
 import pandas as pd
 import numpy as np
-import csv
 from tqdm import tqdm
 from pathlib import Path
 
@@ -302,6 +299,10 @@ class Solver(object):
                         "optimizer_state_dict": self.optimizer.state_dict()},
                        str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
                            self.config.dim_neck) + ".ckpt")
+
+        tt = time.time() - start_time()
+        tt = str(datetime.timedelta(seconds=tt))[:-7]
+        helper.logger("info","[TIME] Whole training time {}".format(tt))
         eval_records.to_csv(self.config.rs_save_path, index=False)
 
     '''

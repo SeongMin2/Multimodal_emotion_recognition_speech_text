@@ -15,7 +15,7 @@ ABS_PATH = os.path.dirname(os.path.abspath(__file__))
 
 now= datetime.now()
 date_time = now.strftime("%d-%m-%Y_%H-%M-%S")
-LOG_PATH = date_time + ".log"
+LOG_PATH = ABS_PATH + "/result/logs/" + date_time + ".log"
 
 ABS_PATH = ABS_PATH
 
@@ -83,7 +83,7 @@ def get_training_config():
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
     parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
-    parser.add_argument("--n_epochs", type=int, default=1)
+    parser.add_argument("--n_epochs", type=int, default=10)
 
     parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
 
@@ -120,7 +120,7 @@ def get_training_config():
     return parser_config
 
 
-def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_terminal=True):
+def logger(level_name, message, log_path=LOG_PATH, highlight=True, show_terminal=True):
     """
         Write message to the log
         Input:
@@ -137,14 +137,15 @@ def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_termina
     if level_name == 'info':
         logging.info(message)
         if show_terminal:
-            if highlight:
-                print(colored(message,'white', 'on_green'))
-            else:
-                print(colored(message,'green'))
+            #print(colored(message,'white', 'on_green'))
+            print(colored(message,'green'))
     elif level_name == 'results':
         logging.info(message)
         if show_terminal:
-            print(colored(message, 'magenta'))
+            if highlight:
+                print(colored(message, 'magenta', 'on_yellow'))
+            else:
+                print(colored(message, 'magenta')) # cyan
     elif level_name == 'error':
         logging.error(message)
         if show_terminal:
@@ -153,3 +154,23 @@ def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_termina
         logging.warning(message)
         if show_terminal:
             print(colored(message,'yellow'))
+    '''
+    grey
+    red
+    green
+    yellow
+    blue
+    magenta
+    cyan
+    white
+    '''
+    '''
+    on_grey
+    on_red
+    on_green
+    on_yellow
+    on_blue
+    on_magenta
+    on_cyan
+    on_white
+    '''

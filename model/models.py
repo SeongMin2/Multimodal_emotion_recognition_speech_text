@@ -13,11 +13,11 @@ class SERTail(nn.Module):
 
         self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
                                      kernel_size=1, stride=1,
-                                     padding="same", dilation=1,
+                                     padding=0, dilation=1,
                                      bias=True)
         self.conv2 = torch.nn.Conv1d(256, 256,
                                      kernel_size=1, stride=1,
-                                     padding="same", dilation=1,
+                                     padding=0, dilation=1,
                                      bias=True)
         self.conv3 = torch.nn.Conv1d(256, 128,
                                      kernel_size=8, stride=1,
@@ -339,11 +339,11 @@ class TxtModel(nn.Module):
 
         self.conv1 = torch.nn.Conv1d(first_input_channel, 256,
                                      kernel_size=1, stride=1,
-                                     padding="same", dilation=1,
+                                     padding=0, dilation=1,
                                      bias=True)
         self.conv2 = torch.nn.Conv1d(256, 256,
                                      kernel_size=1, stride=1,
-                                     padding="same", dilation=1,
+                                     padding=0, dilation=1,
                                      bias=True)
         self.conv3 = torch.nn.Conv1d(256, 128,
                                      kernel_size=8, stride=1,

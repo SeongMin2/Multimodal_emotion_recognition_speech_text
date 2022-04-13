@@ -4,6 +4,7 @@ import parser_helper as helper
 from solver import Solver
 import random
 import numpy as np
+import warnings
 from torch.backends import cudnn
 
 # Name of the train and test pkl files
@@ -49,7 +50,9 @@ def set_seed(seed: int = 42):
 
 def main():
     set_seed(42)
-
+    warnings.filterwarnings(action='ignore') # 일단 pretrained 불러서 쓸 때마다 userwarning 나오고 padding="same"관련해서 나오는데 무시하도록..
+    # 근데 pretrained 관련된 warning은 무시 안되네
+    
     config = helper.get_training_config()
     #train_loader, test_loader = get_train_data_loaders(config, train_npz, test_npz)
     train_loader, test_loader, train_eval = get_data_loaders(config, train_npz, test_npz)
