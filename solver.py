@@ -164,9 +164,11 @@ class Solver(object):
 
                     emo_pred = emo_pred.detach().cpu()[0]
                     if len(emo_preds) == 0:
-                        emo_preds = emo_pred
+                        emo_preds = emo_pred.tolist()
                     else:
-                        emo_preds = [x+y for x,y in zip(emo_pred, emo_preds)]
+                        emo_preds = [x+y for x,y in zip(emo_pred.tolist(), emo_preds)]
+
+                emotion_lb = emotion_lb.detach().cpu()
 
                 if(len(emo_preds) > 0):
                     emo_preds = torch.unsqueeze(torch.tensor(emo_preds),0)

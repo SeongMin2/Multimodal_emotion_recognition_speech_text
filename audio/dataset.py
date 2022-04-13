@@ -71,8 +71,8 @@ class SpeechTextDataset(Dataset):
         self.tokenizer = AutoTokenizer.from_pretrained(self.txt_feat_model)
         self.text_model = AutoModel.from_pretrained(self.txt_feat_model)
 
-        print("Num utterances: ", self.num_tokens)  # number of utterances
-        print("Finished loading the dataset...")
+        #print("Num utterances: ", self.num_tokens)  # number of utterances
+        #print("Finished loading the dataset...")
 
         helper.logger("info", "[INFO] Dataset info - mode: {} / dir: {}".format(self.mode, self.dataset_dir))
         helper.logger("info", "[INFO] Num utterances: {}".format(self.num_tokens))
@@ -276,7 +276,6 @@ class SpeechTextDataset(Dataset):
         features['txt_feat'] = txt_feat
         features['attn_mask_ids'] = np.array([txt_mask_s_idx, spch_mask_s_idx])
         features["emotion_lb"] = emotion_class
-        print(txt)
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 
         # 이거 확인해야함
