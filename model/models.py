@@ -162,7 +162,6 @@ class Encoder(torch.nn.Module):
     def forward(self, x, spk_org, wav2vec_feat):
 
         # # prepare the input
-        print(x.shape)
         x = x.squeeze(1).transpose(2, 1)
 
         # determine the speech input
