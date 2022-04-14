@@ -65,8 +65,8 @@ class SpeechTextDataset(Dataset):
         self.dataset = list(dataset) # 여기에서의 길이를 조절하여서 실험하기
         self.num_tokens = len(self.dataset)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(self.txt_feat_model)
-        self.text_model = AutoModel.from_pretrained(self.txt_feat_model)
+        #self.tokenizer = AutoTokenizer.from_pretrained(self.txt_feat_model)
+        #self.text_model = AutoModel.from_pretrained(self.txt_feat_model)
 
         #print("Num utterances: ", self.num_tokens)  # number of utterances
         #print("Finished loading the dataset...")
@@ -239,7 +239,7 @@ class SpeechTextDataset(Dataset):
 
     def _parse_transcript(self, transcript: str):
 
-        feature, mask_s_idx = extract_features(transcript, self.max_token_len, self.tokenizer, self.text_model)
+        feature, mask_s_idx = extract_features(transcript, self.max_token_len) #, self.tokenizer, self.text_model)
 
         return feature, mask_s_idx
 

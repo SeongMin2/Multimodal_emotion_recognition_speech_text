@@ -13,7 +13,7 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 import pandas as pd
 
-
+#torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 df = pd.DataFrame(columns = ['a','b','c'])
@@ -40,8 +40,8 @@ b="hi"
 
 if a==b:
     print('hf')
-processor = Wav2Vec2Processor.from_pretrained(MODEL_TYPE) # normalize the data
-model = Wav2Vec2ForCTC.from_pretrained(MODEL_TYPE)
+#processor = Wav2Vec2Processor.from_pretrained(MODEL_TYPE) # normalize the data
+#model = Wav2Vec2ForCTC.from_pretrained(MODEL_TYPE)
 
 
 a=[1,2,3]
