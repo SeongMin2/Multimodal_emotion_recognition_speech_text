@@ -133,7 +133,7 @@ class Solver(object):
             inf_start_time = time.time()
 
             self.model.eval()
-            for batch_id, batch in enumerate(data_loader):
+            for batch_id, batch in enumerate(tqdm(data_loader)):
                 self.optimizer.zero_grad()
 
                 if self.config.speech_input == "wav2vec":
@@ -300,7 +300,7 @@ class Solver(object):
                        str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
                            self.config.dim_neck) + ".ckpt")
 
-        tt = time.time() - start_time()
+        tt = time.time() - start_time
         tt = str(datetime.timedelta(seconds=tt))[:-7]
         helper.logger("info","[TIME] Whole training time {}".format(tt))
         eval_records.to_csv(self.config.rs_save_path, index=False)

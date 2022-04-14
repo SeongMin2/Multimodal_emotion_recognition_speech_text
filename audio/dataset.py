@@ -120,6 +120,17 @@ class SpeechTextDataset(Dataset):
                 "attn_mask_ids": features["attn_mask_ids"]
             }
 
+    def no_cut_or_pad_features(self, features, as_list):
+        """ Return features without cutting or padding them """
+
+        if as_list:
+            features["spec"] = [features["spec"]]
+            features["phones"] = [features["phones"]]
+            features["wav2vec_feat"] = [features["wav2vec_feat"]]
+            return features
+        else:
+            return features
+
     def zero_pad(self, array, len_pad):
         """ Zero pads a 2d array with zeros to the right """
         return np.pad(array, ((0, len_pad), (0, 0)), "constant")
@@ -290,7 +301,9 @@ class SpeechTextDataset(Dataset):
                 features = self.crop_utt_segments(features,gt_config)
         # if the utterance has the exact crop size
         else:
-            pass
+            if self.mode == "test":
+                features = self.no_cut_or_pad_features(features=features, as_list=True)
+
 
         return (self.select_data_sample_to_return(gt_config, features))
         # return 할 때는 무조건 최소 numpy로 해야 함 list로 하면 dataloader에서 불러올 때 기괴하게 리스트 안에 tensor 있고 그럼
