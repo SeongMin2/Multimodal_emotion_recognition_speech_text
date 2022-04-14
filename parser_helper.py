@@ -83,7 +83,7 @@ def get_training_config():
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
     parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
-    parser.add_argument("--n_epochs", type=int, default=10)
+    parser.add_argument("--n_epochs", type=int, default=20)
 
     parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
 
@@ -120,7 +120,7 @@ def get_training_config():
     return parser_config
 
 
-def logger(level_name, message, log_path=LOG_PATH, highlight=True, show_terminal=True):
+def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_terminal=True):
     """
         Write message to the log
         Input:

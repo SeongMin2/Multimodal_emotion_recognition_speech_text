@@ -107,9 +107,9 @@ class Solver(object):
 
         max_vals, max_indices = torch.max(logit, 1)
         tmp_correct = (max_indices.numpy() == ground_truth.numpy())
-        for i, idx in enumerate(max_indices.numpy()):
+        for i, idx in enumerate(ground_truth.numpy()):
             n_tp[idx] += tmp_correct[i]
-            n_tp_fn[ground_truth.numpy()[i]] += 1
+            n_tp_fn[idx] += 1
 
         return n_tp, n_tp_fn
 
@@ -189,9 +189,10 @@ class Solver(object):
             inf = time.time() - inf_start_time
             inf = str(datetime.timedelta(seconds=inf))[:-7]
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
+            print("uttr_eval_tp {} uttr_eval_tp_fn {}".format(uttr_eval_tp, uttr_eval_tp_fn))
             helper.logger("results", "[RESULT] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
 
-        return uttr_eval_ua, uttr_eval_wa
+            return uttr_eval_ua, uttr_eval_wa
 
     def train(self):
         data_loader = self.train_loader
@@ -206,12 +207,11 @@ class Solver(object):
 
         for epoch in range(self.config.n_epochs):
             epc_start_time = time.time()
+            helper.logger("info","[INFO] Starting epoch {}".format(epoch+1))
 
             # To calculate Weighted Accuracy
             train_tp = [0 for i in range(self.config.n_classes)]
             train_tp_fn = [0 for i in range(self.config.n_classes)]
-            test_tp = [0 for i in range(self.config.n_classes)]
-            test_tp_fn = [0 for i in range(self.config.n_classes)]
 
             # To calculate Unweighted Accuracy
             train_ua = 0.0
@@ -288,7 +288,7 @@ class Solver(object):
             helper.logger("results","[RESULT] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
 
 
-            train_eval_ua, train_eval_wa = self.uttr_eval(loader_type = "train", epoch=epoch)
+            # train_eval_ua, train_eval_wa = self.uttr_eval(loader_type = "train", epoch=epoch)
             test_ua , test_wa = self.uttr_eval(loader_type = "test", epoch = epoch)
 
             # ['fold', 'epoch', 'data_type','batch','UA','WA']
