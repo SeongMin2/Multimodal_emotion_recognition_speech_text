@@ -16,6 +16,7 @@ data/
 full_data/
 ABS_PATH.py
 result/
+runs/
 
 origin_requirements.txt
 

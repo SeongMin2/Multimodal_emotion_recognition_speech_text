@@ -81,6 +81,8 @@ class Multimodal(nn.Module):
         self.glob_avg_pool_s = nn.AvgPool1d(kernel_size = config.len_crop , stride = config.len_crop) # 이거 crop size말고 specp[0] size로 바꾸는것이 좋음
         self.glob_avg_pool_t = nn.AvgPool1d(kernel_size = config.max_token_len-2, stride=config.max_token_len-2) # [cls] [eos] dataset에서 생성자 정의할 때 뺐음
 
+        # self.glob_max_pool_s = 
+
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
         self.freq = config.freq

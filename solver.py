@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformers.optimization import get_cosine_schedule_with_warmup
-# from torch.utils.tensorboard import SummaryWriter
-# writer = SummaryWriter()
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
 import parser_helper as helper
 import time
 import datetime
@@ -36,6 +36,8 @@ class Solver(object):
         self.device = config.device #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         self.pretrained_check = get_checkpoint_path(config.pretrained_model)
+
+        self.writer = SummaryWriter()
 
         self.build_model()
 
@@ -175,6 +177,13 @@ class Solver(object):
                     uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
                     uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
 
+                    self.writer.add_scalar("UA/Test", uttr_eval_ua, epoch)
+                    self.writer.add_scalar("WA/Test", uttr_eval_wa, epoch)
+                    self.writer.add_scalar("Happy_Excitement Acc/Test", uttr_eval_tp[2] / uttr_eval_tp_fn[2], epoch)
+                    self.writer.add_scalar("Neutral Acc/Test", uttr_eval_tp[1] / uttr_eval_tp_fn[1], epoch)
+                    self.writer.add_scalar("Angry Acc/Test", uttr_eval_tp[0] / uttr_eval_tp_fn[0], epoch)
+                    self.writer.add_scalar("Sad Acc/Test", uttr_eval_tp[3] / uttr_eval_tp_fn[3], epoch)
+
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
             if 0 in uttr_eval_tp_fn:
                 for i, value in enumerate(uttr_eval_tp_fn):
@@ -273,6 +282,16 @@ class Solver(object):
                                                                                                                          spec_loss, post_spec_loss,
                                                                                                                          (spec_loss + post_spec_loss)/2,
                                                                                                                          train_ua / (batch_id + 1)))
+                    # Record results on Tensorboard
+                    self.writer.add_scalar("CLS_Loss/Train", emotion_loss, epoch)
+                    self.writer.add_scalar("SPEC_Loss/Train", spec_loss, epoch)
+                    self.writer.add_scalar("POSTSPEC_Loss/Train", post_spec_loss, epoch)
+                    self.writer.add_scalar("UA/Train", train_ua, epoch)
+                    self.writer.add_scalar("WA/Train", train_wa, epoch)
+                    self.writer.add_scalar("Happy_Excitement Acc/Train", train_tp[2] / train_tp_fn[2], epoch)
+                    self.writer.add_scalar("Neutral Acc/Train", train_tp[1] / train_tp_fn[1], epoch)
+                    self.writer.add_scalar("Angry Acc/Train", train_tp[0] / train_tp_fn[0], epoch)
+                    self.writer.add_scalar("Sad Acc/Train", train_tp[3] / train_tp_fn[3], epoch)
 
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
             if 0 in train_tp_fn:
