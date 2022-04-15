@@ -177,12 +177,6 @@ class Solver(object):
                     uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
                     uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
 
-                    self.writer.add_scalar("UA/Test", uttr_eval_ua, epoch)
-                    self.writer.add_scalar("WA/Test", uttr_eval_wa, epoch)
-                    self.writer.add_scalar("Happy_Excitement Acc/Test", uttr_eval_tp[2] / uttr_eval_tp_fn[2], epoch)
-                    self.writer.add_scalar("Neutral Acc/Test", uttr_eval_tp[1] / uttr_eval_tp_fn[1], epoch)
-                    self.writer.add_scalar("Angry Acc/Test", uttr_eval_tp[0] / uttr_eval_tp_fn[0], epoch)
-                    self.writer.add_scalar("Sad Acc/Test", uttr_eval_tp[3] / uttr_eval_tp_fn[3], epoch)
 
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
             if 0 in uttr_eval_tp_fn:
@@ -193,6 +187,13 @@ class Solver(object):
 
             uttr_eval_ua = round(uttr_eval_ua / (batch_id + 1), 4)
             uttr_eval_wa = round(sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp), 4)
+
+            self.writer.add_scalar("UA/Test", uttr_eval_ua, epoch)
+            self.writer.add_scalar("WA/Test", uttr_eval_wa, epoch)
+            self.writer.add_scalar("Happy_Excitement Acc/Test", uttr_eval_tp[2] / uttr_eval_tp_fn[2], epoch)
+            self.writer.add_scalar("Neutral Acc/Test", uttr_eval_tp[1] / uttr_eval_tp_fn[1], epoch)
+            self.writer.add_scalar("Angry Acc/Test", uttr_eval_tp[0] / uttr_eval_tp_fn[0], epoch)
+            self.writer.add_scalar("Sad Acc/Test", uttr_eval_tp[3] / uttr_eval_tp_fn[3], epoch)
 
             # print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
             inf = time.time() - inf_start_time
@@ -282,16 +283,6 @@ class Solver(object):
                                                                                                                          spec_loss, post_spec_loss,
                                                                                                                          (spec_loss + post_spec_loss)/2,
                                                                                                                          train_ua / (batch_id + 1)))
-                    # Record results on Tensorboard
-                    self.writer.add_scalar("CLS_Loss/Train", emotion_loss, epoch)
-                    self.writer.add_scalar("SPEC_Loss/Train", spec_loss, epoch)
-                    self.writer.add_scalar("POSTSPEC_Loss/Train", post_spec_loss, epoch)
-                    self.writer.add_scalar("UA/Train", train_ua, epoch)
-                    self.writer.add_scalar("WA/Train", train_wa, epoch)
-                    self.writer.add_scalar("Happy_Excitement Acc/Train", train_tp[2] / train_tp_fn[2], epoch)
-                    self.writer.add_scalar("Neutral Acc/Train", train_tp[1] / train_tp_fn[1], epoch)
-                    self.writer.add_scalar("Angry Acc/Train", train_tp[0] / train_tp_fn[0], epoch)
-                    self.writer.add_scalar("Sad Acc/Train", train_tp[3] / train_tp_fn[3], epoch)
 
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
             if 0 in train_tp_fn:
@@ -301,7 +292,18 @@ class Solver(object):
 
             train_ua = round(train_ua / (batch_id + 1),4)
             train_wa = round(sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp), 4)  # average recall per class # 소수점 4자리까지 출력
-            # print("[fold{} epoch {} train UA {} WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
+
+            # Record results on Tensorboard
+            self.writer.add_scalar("CLS_Loss/Train", emotion_loss, epoch)
+            self.writer.add_scalar("SPEC_Loss/Train", spec_loss, epoch)
+            self.writer.add_scalar("POSTSPEC_Loss/Train", post_spec_loss, epoch)
+            self.writer.add_scalar("UA/Train", train_ua, epoch)
+            self.writer.add_scalar("WA/Train", train_wa, epoch)
+            self.writer.add_scalar("Happy_Excitement Acc/Train", train_tp[2] / train_tp_fn[2], epoch)
+            self.writer.add_scalar("Neutral Acc/Train", train_tp[1] / train_tp_fn[1], epoch)
+            self.writer.add_scalar("Angry Acc/Train", train_tp[0] / train_tp_fn[0], epoch)
+            self.writer.add_scalar("Sad Acc/Train", train_tp[3] / train_tp_fn[3], epoch)
+
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
