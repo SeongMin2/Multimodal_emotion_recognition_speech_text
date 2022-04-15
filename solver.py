@@ -190,6 +190,7 @@ class Solver(object):
             inf = str(datetime.timedelta(seconds=inf))[:-7]
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
             print("uttr_eval_tp {} uttr_eval_tp_fn {}".format(uttr_eval_tp, uttr_eval_tp_fn))
+            helper.logger("results", "[WA] uttr_eval_tp {} uttr_eval_tp_fn {}".format(uttr_eval_tp, uttr_eval_tp_fn))
             helper.logger("results", "[RESULT] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
 
             return uttr_eval_ua, uttr_eval_wa
@@ -285,6 +286,7 @@ class Solver(object):
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
             helper.logger("info", "[TIME] epoch {} training time {}".format(epoch + 1 , epc))
+            helper.logger("results", "[WA] train_tp {} train_tp_fn {}".format(train_tp, train_tp_fn))
             helper.logger("results","[RESULT] [fold{} epoch {} train UA {} train WA {}]".format(n_fold, epoch + 1, train_ua, train_wa))
 
 
