@@ -4,12 +4,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers.optimization import get_cosine_schedule_with_warmup
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter()
 import parser_helper as helper
 import time
 import datetime
 import pandas as pd
-import numpy as np
 from tqdm import tqdm
 from pathlib import Path
 
@@ -71,11 +69,6 @@ class Solver(object):
     def data_to_device(self, vars, state):
         # 이거 뭔가 다른 경우에도 쓸 수 있도록 특졍 변수에 결과를 append 하는 식으로 해서 return 하는식이 더 좋을듯
         spec, spk_emb, phones, txt_feat, emotion_lb = vars
-
-        #if state == "train":
-
-
-        #elif state == "test":
 
         spec = spec.to(self.device)
         spk_emb = spk_emb.to(self.device)
@@ -322,11 +315,11 @@ class Solver(object):
                         "optimizer_state_dict": self.optimizer.state_dict()},
                        str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
                            self.config.dim_neck) + ".ckpt")
+            eval_records.to_csv(self.config.rs_save_path, index=False)
 
         tt = time.time() - start_time
         tt = str(datetime.timedelta(seconds=tt))[:-7]
         helper.logger("info","[TIME] Whole training time {}".format(tt))
-        eval_records.to_csv(self.config.rs_save_path, index=False)
 
     '''
     def eval(self, loader_type):
