@@ -69,8 +69,7 @@ def get_content_list(file_list, speaker_dir, config):
             if txt_f_pt.exists():
                 # if the file only has unknown tokens (no phone information)
                 if is_file_unk_token(txt_f):
-                    phones_and_durations, main_phones = ph.get_silent_phone_seq(# txt= , 여기에 txt날것 넣어야 함
-                                                                                config=config,
+                    phones_and_durations, main_phones = ph.get_silent_phone_seq(config=config,
                                                                                 spec_frames=spec.shape[0],
                                                                                 speaker_dir=speaker_dir,
                                                                                 file_name=file_name)

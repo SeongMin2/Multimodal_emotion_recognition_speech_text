@@ -1,5 +1,6 @@
 import os, sys
 import numpy as np
+import random
 
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..'))) # 상위 폴더 import 접근법
@@ -10,7 +11,7 @@ from audio.identity.resemblyzer import encode
 from phoneme.gentle.get_data import get_content_list
 # get_content_list 밑에서 phone 추출에 사용하기
 
-NUM_UTTRS = 8
+NUM_UTTRS = 100
 
 def get_data(config):
     dir_name, subdir_list, _ = next(os.walk(config.spec_dir))
@@ -84,8 +85,11 @@ def get_data(config):
     '''
 
 def main():
+    random.seed(1)
+    np.random.seed(1)
     config = helper.get_config()
     get_data(config)
+
 
 if __name__ == '__main__':
     main()

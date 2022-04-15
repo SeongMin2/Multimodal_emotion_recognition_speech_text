@@ -43,19 +43,19 @@ class Solver(object):
 
     def build_model(self):
         self.model = Multimodal(self.config)
-
+        '''
         no_decay = ['bias', 'LayerNorm.weight']
         optimizer_grouped_parameters = [
             {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
             {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
-
+        '''
         t_total = len(self.train_loader) * self.config.n_epochs
         warmup_step = int(t_total * self.config.warmup_ratio)
 
         self.model.to(self.device)
-        self.optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=self.config.learning_rate)
-        self.scheduler = get_cosine_schedule_with_warmup(self.optimizer, num_warmup_steps= warmup_step, num_training_steps= t_total )
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+        #self.scheduler = get_cosine_schedule_with_warmup(self.optimizer, num_warmup_steps= warmup_step, num_training_steps= t_total )
         self.loss_fn = nn.CrossEntropyLoss()
 
 
@@ -249,7 +249,7 @@ class Solver(object):
 
                 total_loss.backward()
                 self.optimizer.step()
-                self.scheduler.step()
+                #self.scheduler.step()
 
                 emotion_logits = emotion_logits.detach().cpu()
                 emotion_lb = emotion_lb.detach().cpu()

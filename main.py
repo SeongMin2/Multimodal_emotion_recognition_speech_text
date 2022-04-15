@@ -63,4 +63,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # 여기다 seed를 처리하면 안됨, 모델에 닿지도 않음
