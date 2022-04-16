@@ -253,7 +253,8 @@ class Solver(object):
 
                 if batch_id == 0:
                     helper.logger("info", "[CHECK SEED] Print emotion_logits")
-                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits))
+                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[0]))
+                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[1]))
 
                 spec_loss = F.mse_loss(spec, spec_out)
                 post_spec_loss = F.mse_loss(spec, post_spec_out)
