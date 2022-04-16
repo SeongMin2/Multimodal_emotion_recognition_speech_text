@@ -34,7 +34,7 @@ def model_check(model, train_loader):
     # def forward(self, spec, spk_emb, phones, wav2vec_feat, txt_feat):
 
 def set_seed(seed: int):
-    torch.manual_seed(1)  # 이놈이 초기 weight 값 들도 모두 고정 시킴
+    torch.manual_seed(seed)  # 이놈이 초기 weight 값 들도 모두 고정 시킴
     '''
     이거 두개는 연산 속도 느려져서 연구 실험 후반 단계에 사용하라고 권장함
     torch.backends.cudnn.deterministic = True

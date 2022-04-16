@@ -228,6 +228,13 @@ class Solver(object):
 
             for batch_id, batch in enumerate(tqdm(data_loader)):
                 self.optimizer.zero_grad()
+                
+                # Check seed for dataset
+                if batch_id == 0:
+                    print("[CHECK SEDD] Print spec")
+                    helper.logger("info", "[CHECK SEED] Print spec")
+                    helper.logger("info", "[INFO] {}".format(batch['spec'][0][0][0:8]))
+                    helper.logger("info", "[INFO] {}".format(batch['spec'][1][0][0:8]))
 
                 if self.config.speech_input == "wav2vec":
                     spec, spk_emb, phones, txt_feat, attn_mask_ids, emotion_lb, wav2vec_feat = batch.values()
@@ -243,6 +250,10 @@ class Solver(object):
                 spec, spk_emb, phones, txt_feat, emotion_lb = tmp_vars
 
                 spec_out, post_spec_out, emotion_logits = self.model(spec, spk_emb, spk_emb, phones, wav2vec_feat, txt_feat, attn_mask_ids)
+
+                if batch_id == 0:
+                    helper.logger("info", "[CHECK SEED] Print emotion_logits")
+                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits))
 
                 spec_loss = F.mse_loss(spec, spec_out)
                 post_spec_loss = F.mse_loss(spec, post_spec_out)

@@ -388,6 +388,8 @@ class Classifier(nn.Module):
         self.dropout = nn.Dropout(config.dropout_ratio)
 
     def forward(self, x):
+        #print("[CHECK SEED] Print Classifier hidden1 weight")
+        #print(self.hidden1.weight[0][0:20])
         x = F.relu(self.hidden1(x))
         x = self.dropout(F.relu(self.hidden2(x)))
         x = F.relu(self.hidden3(x))
