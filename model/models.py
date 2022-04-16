@@ -393,7 +393,7 @@ class Classifier(nn.Module):
         x = F.relu(self.hidden1(x))
         x = self.dropout(F.relu(self.hidden2(x)))
         x = F.relu(self.hidden3(x))
-        x = torch.softmax(x, dim=-1)
+        # x = torch.softmax(x, dim=-1) # nn.CrossEntropy()에 이미 softmax로 진행 됨..
 
         return x
 
