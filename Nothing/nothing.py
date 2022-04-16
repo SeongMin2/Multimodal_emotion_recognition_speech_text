@@ -14,6 +14,7 @@ import torch
 import pandas as pd
 
 #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+print(torch.cuda.device_count())
 
 
 df = pd.DataFrame(columns = ['a','b','c'])

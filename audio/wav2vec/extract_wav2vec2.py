@@ -1,5 +1,6 @@
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
+#from torch.nn.parallel import data_parallel
 import sys
 import numpy as np
 from .spectrogram_helpers import get_spec

@@ -162,7 +162,8 @@ class Cross_attention(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_ratio)
 
-        self.scale = torch.sqrt(torch.FloatTensor([self.head_dim])).to(config.device)
+
+        self.scale = torch.nn.parameter.Parameter(torch.sqrt(torch.FloatTensor([self.head_dim])), requires_grad=False)  # .to(config.device)
 
     def Scaled_Dot_Product_attention(self, query, key, value, mask):
 

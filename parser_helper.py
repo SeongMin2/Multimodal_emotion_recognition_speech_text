@@ -41,7 +41,7 @@ def get_config():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--mode", type=str, default="test", help="train or test mode")
-    parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/full_data/folds/fold5/test", help="Path to spectrum files")
+    parser.add_argument("--spec_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/test", help="Path to spectrum files")
     parser.add_argument("--phone_dir", type=str, default=ABS_PATH + "/phoneme/gentle/align_results", help="path to the phonetic alignment json files")
     parser.add_argument("--phone_dict_file", type=str, default=ABS_PATH + "/phoneme/gentle/phone_dict.csv",help="path to phone dictionary file")
     parser.add_argument("--wav_dir", type=str, default=ABS_PATH + "/full_data/speech", help="Path to wave files")
@@ -68,7 +68,7 @@ def get_config():
 def get_training_config():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--device", type=str, default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu'))
+    parser.add_argument("--device", type=str, default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')) # before -> cuda:0
 
     parser.add_argument("--data_dir", type=str, default="./full_data", help="Path to data dir")
     parser.add_argument("--train_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/train", help="Path to train data dir")
@@ -120,7 +120,7 @@ def get_training_config():
     return parser_config
 
 
-def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_terminal=True):
+def logger(level_name, message, log_path=LOG_PATH, highlight=True, show_terminal=True):
     """
         Write message to the log
         Input:
@@ -143,9 +143,9 @@ def logger(level_name, message, log_path=LOG_PATH, highlight=False, show_termina
         logging.info(message)
         if show_terminal:
             if highlight:
-                print(colored(message, 'magenta', 'on_yellow'))
+                print(colored(message, 'white', 'on_blue'))
             else:
-                print(colored(message, 'magenta')) # cyan
+                print(colored(message, 'white')) # cyan
     elif level_name == 'error':
         logging.error(message)
         if show_terminal:
