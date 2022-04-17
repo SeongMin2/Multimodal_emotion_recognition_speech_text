@@ -50,8 +50,8 @@ class Solver(object):
             {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
         '''
-        t_total = len(self.train_loader) * self.config.n_epochs
-        warmup_step = int(t_total * self.config.warmup_ratio)
+        # t_total = len(self.train_loader) * self.config.n_epochs
+        # warmup_step = int(t_total * self.config.warmup_ratio)
 
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
@@ -206,6 +206,13 @@ class Solver(object):
             eval_records = pd.read_csv(self.config.rs_save_path)
 
         n_fold = self.config.train_dir.rsplit('/', 2)[1][4]
+        helper.logger("info", "[INFO] Hyperparameter Setting")
+        helper.logger("info", "[ENV] Seed {} Batch {} Dropout {} Epochs {}".format(self.config.seed, self.config.batch_size, self.config.dropout_ratio, self.config.n_epochs))
+        helper.logger("info", "[INFO] Optimizer : {} Learning_rate {} ".format(type(self.optimizer).__name__, self.config.learning_rate))
+        helper.logger("info", "[ENV] Attention_emb {} N_heads {}".format(self.config.attention_emb, self.config.n_heads))
+        helper.logger("info", "[ENV] BottleNeck : Dim_neck {} Freq {}".format(self.config.dim_neck, self.config.freq))
+        helper.logger("info", "[ENV] Spectrogram Config : Len_crop {} Num_mels {} Speech_input : {}".format(self.config.len_crop, self.config.num_mels, self.config.speech_input))
+        helper.logger("info", "[ENV] Wav2vec2 : {} Txt_model : {}".format(self.config.pretrained_wav2vec2_model, self.config.pretrained_txt_model))
         helper.logger("info","[INFO] Fold{} start training...".format(n_fold))
         start_time = time.time()
 
@@ -288,6 +295,9 @@ class Solver(object):
                                                                                                                          spec_loss, post_spec_loss,
                                                                                                                          (spec_loss + post_spec_loss)/2,
                                                                                                                          train_ua / (batch_id + 1)))
+                    helper.logger("info", "[CHECK SEED] Print emotion_logits")
+                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[0]))
+                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[1]))
 
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
             if 0 in train_tp_fn:
@@ -325,7 +335,7 @@ class Solver(object):
             torch.save({"epoch": (epoch + 1),
                         "model": self.model.state_dict(),
                         "optimizer_state_dict": self.optimizer.state_dict()},
-                       str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
+                       "fold"+str(self.config.train_dir.rsplit('/', 2)[1][4])+"_"+str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
                            self.config.dim_neck) + ".ckpt")
             eval_records.to_csv(self.config.rs_save_path, index=False)
 

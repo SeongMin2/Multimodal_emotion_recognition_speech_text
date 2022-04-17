@@ -49,11 +49,11 @@ def set_seed(seed: int):
     torch.cuda.manual_seed_all(seed)  # if use multi-GPU
 
 def main():
-    set_seed(1)
     warnings.filterwarnings(action='ignore') # 일단 pretrained 불러서 쓸 때마다 userwarning 나오고 padding="same"관련해서 나오는데 무시하도록..
     # 근데 pretrained 관련된 warning은 무시 안되네
     
     config = helper.get_training_config()
+    set_seed(config.seed)
     #train_loader, test_loader = get_train_data_loaders(config, train_npz, test_npz)
     train_loader, test_loader, train_eval = get_data_loaders(config, train_npz, test_npz)
     helper.logger("info", "[INFO] Data loading complete!")

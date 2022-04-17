@@ -1,12 +1,17 @@
 from transformers import AutoModel, AutoTokenizer
 import torch
+import sys,os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+import parser_helper as helper
 
-txt_feat_model = "bert-base-uncased"
-tokenizer = AutoTokenizer.from_pretrained(txt_feat_model)
-text_model = AutoModel.from_pretrained(txt_feat_model)
+config = helper.get_training_config()
+MODEL_TYPE = config.pretrained_txt_model
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_TYPE)
+text_model = AutoModel.from_pretrained(MODEL_TYPE)
 
 use_cuda = torch.cuda.is_available()
-device = torch.device('cuda:0' if use_cuda else 'cpu')
+device = torch.device('cuda:2' if use_cuda else 'cpu')
 print("Device: ", device)
 
 text_model = text_model.to(device)

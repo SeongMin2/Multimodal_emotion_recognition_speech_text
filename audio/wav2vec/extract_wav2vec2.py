@@ -1,17 +1,20 @@
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 #from torch.nn.parallel import data_parallel
-import sys
+import sys, os
 import numpy as np
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+import parser_helper as helper
 from .spectrogram_helpers import get_spec
 
-MODEL_TYPE = "facebook/wav2vec2-large-lv60"
+config = helper.get_training_config()
+MODEL_TYPE = config.pretrained_wav2vec2_model
 
 processor = Wav2Vec2Processor.from_pretrained(MODEL_TYPE) # normalize the data
 model = Wav2Vec2ForCTC.from_pretrained(MODEL_TYPE)
 
 use_cuda = torch.cuda.is_available()
-device = torch.device('cuda:0' if use_cuda else 'cpu')
+device = torch.device('cuda:2' if use_cuda else 'cpu')
 print("Device: ", device)
 
 model = model.to(device)

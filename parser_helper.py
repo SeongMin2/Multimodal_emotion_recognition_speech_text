@@ -68,7 +68,8 @@ def get_config():
 def get_training_config():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--device", type=str, default=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')) # before -> cuda:0
+    parser.add_argument("--device", type=str, default=torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')) # before -> cuda:0
+    parser.add_argument("--seed", type=int, default=1)
 
     parser.add_argument("--data_dir", type=str, default="./full_data", help="Path to data dir")
     parser.add_argument("--train_dir", type=str, default=ABS_PATH + "/full_data/folds/fold1/train", help="Path to train data dir")
@@ -82,8 +83,8 @@ def get_training_config():
     parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
-    parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
-    parser.add_argument("--n_epochs", type=int, default=30)
+    #parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
+    parser.add_argument("--n_epochs", type=int, default=60)
 
     parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
 
@@ -112,6 +113,8 @@ def get_training_config():
     parser.add_argument("--selected_catg", type=list, default=["hap", "exc", "ang", "sad", "neu"], help="Limit categories")
     parser.add_argument("--n_classes", type=int , default=4, help="Number of classes(categories)")
 
+    parser.add_argument("--pretrained_wav2vec2_model", type=str, default="facebook/wav2vec2-large-lv60" )
+    parser.add_argument("--pretrained_txt_model", type=str, default="bert-base-uncased")
     parser.add_argument("--pretrained_model", type=str, default=None, help="Path of pretrained model")
 
 
