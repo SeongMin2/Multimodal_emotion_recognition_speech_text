@@ -335,7 +335,7 @@ class Solver(object):
             torch.save({"epoch": (epoch + 1),
                         "model": self.model.state_dict(),
                         "optimizer_state_dict": self.optimizer.state_dict()},
-                       "fold"+str(self.config.train_dir.rsplit('/', 2)[1][4])+"_"+str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) + "_neckdim_" + str(
+                       str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) +"_fold"+str(self.config.train_dir.rsplit('/', 2)[1][4])+ "_neckdim_" + str(
                            self.config.dim_neck) + ".ckpt")
             eval_records.to_csv(self.config.rs_save_path, index=False)
 

@@ -4,6 +4,7 @@ import parser_helper as helper
 from solver import Solver
 import random
 import numpy as np
+import os
 import warnings
 from torch.backends import cudnn
 
@@ -40,13 +41,18 @@ def set_seed(seed: int):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False 
     음 CuDNN의 randomness를 제어함
+    이거 고정 안시킨 seed 제대로 안됨 그 gok hae jo ya ham
     '''
     random.seed(seed)
     np.random.seed(seed)
+    #os.environ["PYTHONHASHSEED"] = str(seed)
 
     # 동일한 조건에서 학습 시 weight가 변화하지 않게 하는 옵션
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)  # if use multi-GPU
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    # torch.backends.cudnn.enabled = False
 
 def main():
     warnings.filterwarnings(action='ignore') # 일단 pretrained 불러서 쓸 때마다 userwarning 나오고 padding="same"관련해서 나오는데 무시하도록..
