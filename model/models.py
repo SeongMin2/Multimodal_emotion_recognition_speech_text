@@ -334,7 +334,7 @@ class TxtModel(nn.Module):
     def __init__(self, config):
         super(TxtModel, self).__init__()
     
-        first_input_channel = AutoConfig.from_pretrained(config.txt_feat_model).hidden_size
+        first_input_channel = AutoConfig.from_pretrained(config.pretrained_txt_model).hidden_size
         last_output_channel = config.attention_emb
 
         self.conv1 = torch.nn.Conv1d(first_input_channel, 256,

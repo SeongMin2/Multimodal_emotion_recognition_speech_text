@@ -10,6 +10,7 @@ import datetime
 import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
+from torchinfo import summary
 
 
 def get_checkpoint_path(checkpoint_path_str):
@@ -52,6 +53,9 @@ class Solver(object):
         '''
         # t_total = len(self.train_loader) * self.config.n_epochs
         # warmup_step = int(t_total * self.config.warmup_ratio)
+        helper.logger("info", "[MODEL STRCT] Model Structure")
+        helper.logger("info", summary(self.model))
+        helper.logger("info", self.model)
 
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)

@@ -32,7 +32,7 @@ class model2(nn.Module):
 
 testm1 = model1()
 testm2 = model2()
-
+print(testm1)
 summary(testm1)
 summary(testm2)
 

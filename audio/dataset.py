@@ -28,7 +28,7 @@ class SpeechTextDataset(Dataset):
         self.wav_dir = wav_dir
         self.len_crop = config.len_crop
         self.speech_input = config.speech_input
-        self.txt_feat_model = config.txt_feat_model
+        #self.txt_feat_model = config.pretrained_text_model
         self.transforms = apply_wav2vec # 일단 default로 wav2vec2.0 transform으로 해둠 (일단은)
         self.sample_rate = sample_rate
         self._load_wav = load_wav
