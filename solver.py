@@ -44,13 +44,13 @@ class Solver(object):
 
     def build_model(self):
         self.model = Multimodal(self.config)
-        '''
+
         no_decay = ['bias', 'LayerNorm.weight']
         optimizer_grouped_parameters = [
-            {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
+            {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01}, # i need to change 0.001
             {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
-        '''
+
         # t_total = len(self.train_loader) * self.config.n_epochs
         # warmup_step = int(t_total * self.config.warmup_ratio)
         helper.logger("info", "[MODEL STRCT] Model Structure")
@@ -58,7 +58,8 @@ class Solver(object):
         helper.logger("info", self.model)
 
         self.model.to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+        #self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+        self.optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=self.config.learning_rate)
         #self.scheduler = get_cosine_schedule_with_warmup(self.optimizer, num_warmup_steps= warmup_step, num_training_steps= t_total )
         self.loss_fn = nn.CrossEntropyLoss()
 
@@ -205,7 +206,7 @@ class Solver(object):
     def train(self):
         data_loader = self.train_loader
         if not Path(self.config.rs_save_path).exists():
-            eval_records = pd.DataFrame(columns=['fold', 'epoch', 'data_type','batch','UA','WA'], )
+            eval_records = pd.DataFrame(columns=['fold', 'epoch', 'data_type','batch','UA','WA', 'log_path'], )
         else:
             eval_records = pd.read_csv(self.config.rs_save_path)
 
@@ -334,7 +335,7 @@ class Solver(object):
             test_ua , test_wa = self.uttr_eval(loader_type = "test", epoch = epoch)
 
             # ['fold', 'epoch', 'data_type','batch','UA','WA']
-            eval_records.loc[len(eval_records)] = [n_fold, epoch+1, "test", self.config.batch_size, test_ua, test_wa]
+            eval_records.loc[len(eval_records)] = [n_fold, epoch+1, "test", self.config.batch_size, test_ua, test_wa, str(helper.LOG_PATH)]
 
             torch.save({"epoch": (epoch + 1),
                         "model": self.model.state_dict(),
