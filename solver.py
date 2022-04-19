@@ -45,12 +45,6 @@ class Solver(object):
     def build_model(self):
         self.model = Multimodal(self.config)
 
-        no_decay = ['bias', 'LayerNorm.weight']
-        optimizer_grouped_parameters = [
-            {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01}, # i need to change 0.001
-            {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-        ]
-
         # t_total = len(self.train_loader) * self.config.n_epochs
         # warmup_step = int(t_total * self.config.warmup_ratio)
         helper.logger("info", "[MODEL STRCT] Model Structure")
@@ -58,8 +52,18 @@ class Solver(object):
         helper.logger("info", self.model)
 
         self.model.to(self.device)
-        #self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
-        self.optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=self.config.learning_rate)
+
+        if self.config.weight_decay:
+            no_decay = ['bias', 'LayerNorm.weight']
+            optimizer_grouped_parameters = [
+                {'params': [p for n, p in self.model.named_parameters() if not any(nd in n for nd in no_decay)],
+                 'weight_decay': self.config.weight_decay},  # i need to change 0.001
+                {'params': [p for n, p in self.model.named_parameters() if any(nd in n for nd in no_decay)],
+                 'weight_decay': 0.0}
+            ]
+            self.optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=self.config.learning_rate)
+        else:
+            self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
         #self.scheduler = get_cosine_schedule_with_warmup(self.optimizer, num_warmup_steps= warmup_step, num_training_steps= t_total )
         self.loss_fn = nn.CrossEntropyLoss()
 
@@ -213,7 +217,7 @@ class Solver(object):
         n_fold = self.config.train_dir.rsplit('/', 2)[1][4]
         helper.logger("info", "[INFO] Hyperparameter Setting")
         helper.logger("info", "[ENV] Seed {} Batch {} Dropout {} Epochs {}".format(self.config.seed, self.config.batch_size, self.config.dropout_ratio, self.config.n_epochs))
-        helper.logger("info", "[INFO] Optimizer : {} Learning_rate {} ".format(type(self.optimizer).__name__, self.config.learning_rate))
+        helper.logger("info", "[INFO] Optimizer : {} Learning_rate {} weight_decay {} ".format(type(self.optimizer).__name__, self.config.learning_rate, self.config.weight_decay))
         helper.logger("info", "[ENV] Attention_emb {} N_heads {}".format(self.config.attention_emb, self.config.n_heads))
         helper.logger("info", "[ENV] BottleNeck : Dim_neck {} Freq {}".format(self.config.dim_neck, self.config.freq))
         helper.logger("info", "[ENV] Spectrogram Config : Len_crop {} Num_mels {} Speech_input : {}".format(self.config.len_crop, self.config.num_mels, self.config.speech_input))
@@ -335,7 +339,7 @@ class Solver(object):
             test_ua , test_wa = self.uttr_eval(loader_type = "test", epoch = epoch)
 
             # ['fold', 'epoch', 'data_type','batch','UA','WA']
-            eval_records.loc[len(eval_records)] = [n_fold, epoch+1, "test", self.config.batch_size, test_ua, test_wa, str(helper.LOG_PATH)]
+            eval_records.loc[len(eval_records)] = [n_fold, epoch+1, "test", self.config.batch_size, test_ua, test_wa, str(helper.LOG_PATH.rsplit("/",1)[1])]
 
             torch.save({"epoch": (epoch + 1),
                         "model": self.model.state_dict(),
