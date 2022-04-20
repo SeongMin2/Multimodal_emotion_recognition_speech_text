@@ -15,10 +15,16 @@ class SERTail(nn.Module):
                                      kernel_size=1, stride=1,
                                      padding=0, dilation=1,
                                      bias=True)
+        self.conv2 = torch.nn.Conv1d(256, 128,
+                                     kernel_size=1, stride=1,
+                                     padding=0, dilation=1,
+                                     bias=True)
+        '''
         self.conv2 = torch.nn.Conv1d(256, 256,
                                      kernel_size=1, stride=1,
                                      padding=0, dilation=1,
                                      bias=True)
+        
         self.conv3 = torch.nn.Conv1d(256, 128,
                                      kernel_size=8, stride=1,
                                      padding="same", dilation=1,
@@ -27,13 +33,18 @@ class SERTail(nn.Module):
                                      kernel_size=4, stride=1,
                                      padding="same", dilation=1,
                                      bias=True)
+        '''
+        self.conv3 = torch.nn.Conv1d(128, last_output_channel,
+                                     kernel_size=5, stride=1,
+                                     padding="same", dilation=1,
+                                     bias=True)
     def forward(self, x):
         x = x.transpose(1, 2)
 
         x = F.relu(self.conv1(x)) # (batch, 256, 98)
         x = F.relu(self.conv2(x)) # (batch, 256, 100)
         x = F.relu(self.conv3(x)) # (batch, 128, 95)
-        x = F.relu(self.conv4(x)) # (batch, 128, 94)
+        #x = F.relu(self.conv4(x)) # (batch, 128, 94)
 
         return x
 
@@ -134,7 +145,7 @@ class Encoder(torch.nn.Module):
 
         if config.speech_input == "wav2vec":
             input_len = config.dim_wav2vec_emb
-            conv_dim = 1024 # 원래
+            conv_dim = 512 # 원래
         elif config.speech_input == "spec":
             input_len = config.num_mels
 
@@ -380,7 +391,7 @@ class Classifier(nn.Module):
 
         n_classes = config.n_classes
         input_dim = config.attention_emb * 2
-
+        '''
         self.hidden1 = nn.Linear(input_dim, 128)    
         self.hidden2 = nn.Linear(128, 128) # output_dim을 64로 할까 128로 할까
         self.hidden3 = nn.Linear(128, n_classes)
@@ -388,16 +399,16 @@ class Classifier(nn.Module):
         '''
         self.hidden1 = nn.Linear(input_dim, 128)
         self.hidden2 = nn.Linear(128, n_classes)
-        #self.dropout = nn.Dropout(config.dropout_ratio)
-        '''
+        self.dropout = nn.Dropout(0.4)
+
 
     def forward(self, x):
-        x = F.relu(self.hidden1(x))
-        x = self.dropout(F.relu(self.hidden2(x)))
-        x = self.hidden3(x)
-
         #x = F.relu(self.hidden1(x))
         #x = self.dropout(F.relu(self.hidden2(x)))
+        #x = self.hidden3(x)
+
+        x = self.dropout(F.relu(self.hidden1(x)))
+        x = self.hidden2(x)
         #x = F.relu(self.hidden2(x))
 
         # x = torch.softmax(x, dim=-1) # nn.CrossEntropy()에 이미 softmax로 진행 됨..

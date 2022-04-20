@@ -83,9 +83,9 @@ def get_training_config():
     parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
-    parser.add_argument("--weight_decay", type=float, default = 0 , help="weight decay value")
+    parser.add_argument("--weight_decay", type=float, default = 0.001 , help="weight decay value")
     #parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
-    parser.add_argument("--n_epochs", type=int, default=60)
+    parser.add_argument("--n_epochs", type=int, default=50)
 
     parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
 
@@ -102,8 +102,7 @@ def get_training_config():
 
     parser.add_argument("--dim_spk_emb", type=int, default=256, help="number of speaker identity embedding length")
     parser.add_argument("--dim_phone_emb", type=int, default=128, help="Dimension size of phoneme (Number of phoneme embedding length)")
-
-    # model feauter size configuration
+    # model feaute size configuration
     parser.add_argument("--conv_dim", type=int, default=512, help="Number of convolution channel or Number of kernels")
 
     parser.add_argument("--dim_pre", type=int, default=512, help="Length of first LSTM module in Decoder")

@@ -84,6 +84,9 @@ class Multimodal(nn.Module):
         #self.glob_max_pool_s = nn.MaxPool1d(kernel_size = config.len_crop, stride = config.len_crop)
         #self.glob_max_pool_t = nn.MaxPool1d(kernel_size = config.max_token_len-2, stride=config.max_token_len-2)
 
+        #self.dropout_s = nn.Dropout(config.dropout_ratio)
+        #self.dropout_t = nn.Dropout(config.dropout_ratio)
+
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
         self.freq = config.freq
@@ -140,7 +143,7 @@ class Multimodal(nn.Module):
         src_s = self.post_layer_norm_s(src_s + self.ff_s(src_s))
         src_t = self.post_layer_norm_t(src_t + self.ff_t(src_t))
 
-        # if you use Avg pooling
+       # if you use Avg pooling
         src_s = self.glob_avg_pool_s(src_s.transpose(1,2))
         src_t = self.glob_avg_pool_t(src_t.transpose(1,2))
 
