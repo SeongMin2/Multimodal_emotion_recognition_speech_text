@@ -78,16 +78,16 @@ def get_training_config():
     parser.add_argument("--md_save_dir", type=str, default=ABS_PATH + "/result/models", help="Path to Model save dir")
     parser.add_argument("--rs_save_path", type=str, default=ABS_PATH + "/result/results.csv", help="Path to save csv result")
 
-    parser.add_argument("--batch_size" ,type=int, default=2, help="Batch size")
+    parser.add_argument("--batch_size" ,type=int, default=64, help="Batch size")
     parser.add_argument("--dropout_ratio", type=float, default= 0.2, help="Ratio of dropout")
     parser.add_argument("--attention_emb", type=int , default=128, help="Size of attention hidden states")
     parser.add_argument("--n_heads", type=int, default=8, help="Number of Multi-head")
     parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning ratio")
     parser.add_argument("--weight_decay", type=float, default = 0.001 , help="weight decay value")
     #parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
-    parser.add_argument("--n_epochs", type=int, default=50)
+    parser.add_argument("--n_epochs", type=int, default=40)
 
-    parser.add_argument("--log_interval", type=int, default=200, help="Interval time where model checks probability")
+    parser.add_argument("--log_interval", type=int, default=20, help="Interval time where model checks probability")
 
     # Bottleneck configuration
     parser.add_argument("-dim_neck", type=int, default=8, help="Bottleneck parameter of d")
@@ -112,6 +112,8 @@ def get_training_config():
 
     parser.add_argument("--selected_catg", type=list, default=["hap", "exc", "ang", "sad", "neu"], help="Limit categories")
     parser.add_argument("--n_classes", type=int , default=4, help="Number of classes(categories)")
+
+    parser.add_argument("--gamma", type=float, default=0.4, help="loss ratio")
 
     parser.add_argument("--pretrained_wav2vec2_model", type=str, default="facebook/wav2vec2-large-lv60" )
     parser.add_argument("--pretrained_txt_model", type=str, default="bert-large-uncased")

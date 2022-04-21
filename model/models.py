@@ -34,10 +34,12 @@ class SERTail(nn.Module):
                                      padding="same", dilation=1,
                                      bias=True)
         '''
+
         self.conv3 = torch.nn.Conv1d(128, last_output_channel,
-                                     kernel_size=5, stride=1,
+                                     kernel_size=3, stride=1,
                                      padding="same", dilation=1,
                                      bias=True)
+
     def forward(self, x):
         x = x.transpose(1, 2)
 

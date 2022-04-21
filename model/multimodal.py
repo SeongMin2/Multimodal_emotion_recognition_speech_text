@@ -78,14 +78,14 @@ class Multimodal(nn.Module):
         self.ff_s = nn.Linear(config.attention_emb, config.attention_emb)
         self.ff_t = nn.Linear(config.attention_emb, config.attention_emb)
 
-        self.glob_avg_pool_s = nn.AvgPool1d(kernel_size = config.len_crop , stride = config.len_crop) # 이거 crop size말고 specp[0] size로 바꾸는것이 좋음
-        self.glob_avg_pool_t = nn.AvgPool1d(kernel_size = config.max_token_len-2, stride=config.max_token_len-2) # [cls] [eos] dataset에서 생성자 정의할 때 뺐음
+        #self.glob_avg_pool_s = nn.AvgPool1d(kernel_size = config.len_crop , stride = config.len_crop) # 이거 crop size말고 specp[0] size로 바꾸는것이 좋음
+        #self.glob_avg_pool_t = nn.AvgPool1d(kernel_size = config.max_token_len-2, stride=config.max_token_len-2) # [cls] [eos] dataset에서 생성자 정의할 때 뺐음
 
-        #self.glob_max_pool_s = nn.MaxPool1d(kernel_size = config.len_crop, stride = config.len_crop)
-        #self.glob_max_pool_t = nn.MaxPool1d(kernel_size = config.max_token_len-2, stride=config.max_token_len-2)
+        self.glob_max_pool_s = nn.MaxPool1d(kernel_size = config.len_crop, stride = config.len_crop)
+        self.glob_max_pool_t = nn.MaxPool1d(kernel_size = config.max_token_len-2, stride=config.max_token_len-2)
 
-        #self.dropout_s = nn.Dropout(config.dropout_ratio)
-        #self.dropout_t = nn.Dropout(config.dropout_ratio)
+        self.dropout_s = nn.Dropout(config.dropout_ratio)
+        self.dropout_t = nn.Dropout(config.dropout_ratio)
 
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
@@ -140,15 +140,15 @@ class Multimodal(nn.Module):
         src_t = self.layer_norm_t(ter_feat + cross_attn_t)
         # src2 : (batch, 122, 128)
 
-        src_s = self.post_layer_norm_s(src_s + self.ff_s(src_s))
-        src_t = self.post_layer_norm_t(src_t + self.ff_t(src_t))
+        src_s = self.post_layer_norm_s(src_s + self.dropout_s(self.ff_s(src_s)))
+        src_t = self.post_layer_norm_t(src_t + self.dropout_t(self.ff_t(src_t)))
 
        # if you use Avg pooling
-        src_s = self.glob_avg_pool_s(src_s.transpose(1,2))
-        src_t = self.glob_avg_pool_t(src_t.transpose(1,2))
+        #src_s = self.glob_avg_pool_s(src_s.transpose(1,2))
+        #src_t = self.glob_avg_pool_t(src_t.transpose(1,2))
 
-        #src_s = self.glob_max_pool_s(src_s.transpose(1,2))
-        #src_t = self.glob_max_pool_t(src_t.transpose(1,2))
+        src_s = self.glob_max_pool_s(src_s.transpose(1,2))
+        src_t = self.glob_max_pool_t(src_t.transpose(1,2))
 
         src = torch.cat((src_s.view(src_s.shape[0], -1), src_t.view(src_t.shape[0], -1)), dim=-1)
         # 이후로 classifier 들어가면 됨
