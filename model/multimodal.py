@@ -87,6 +87,8 @@ class Multimodal(nn.Module):
         self.dropout_s = nn.Dropout(config.dropout_ratio)
         self.dropout_t = nn.Dropout(config.dropout_ratio)
 
+        self.gamma = torch.nn.parameter.Parameter(torch.FloatTensor([config.gamma]), requires_grad=False)
+
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
         self.freq = config.freq
@@ -123,7 +125,7 @@ class Multimodal(nn.Module):
         encoder_outputs = self.encoder(spec, spk_emb, wav2vec_feat)
         # encoder_outputs : (batch, 96, 2*d)
 
-        ser_feat = self.ser_tail(encoder_outputs)
+        ser_feat = self.ser_tail(self.gamma * encoder_outputs)
         
         ter_feat = self.txt_model(txt_feat)
 

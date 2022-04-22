@@ -13,6 +13,9 @@ from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 import pandas as pd
 
+
+a = torch.rand(2,3)
+b = 2 * a
 #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 print(torch.cuda.device_count())
 

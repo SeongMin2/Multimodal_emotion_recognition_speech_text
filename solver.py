@@ -127,6 +127,7 @@ class Solver(object):
 
         n_fold = self.config.test_dir.rsplit('/', 2)[1][4]
 
+        #avg_test_loss = []
         with torch.no_grad():
             if loader_type == "train":
                 data_loader = self.train_eval
@@ -178,6 +179,9 @@ class Solver(object):
                     tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
                     uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
                     uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
+
+                    #emotion_loss = self.loss_fn(emo_preds.to(self.device), emotion_lb.to(self.device))
+
 
 
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
@@ -277,8 +281,8 @@ class Solver(object):
 
                 emotion_loss = self.loss_fn(emotion_logits, emotion_lb)
 
-                # total_loss = spec_loss + post_spec_loss + emotion_loss
-                total_loss = (1- self.config.gamma ) * (spec_loss + post_spec_loss) + (self.config.gamma * emotion_loss)
+                total_loss = spec_loss + post_spec_loss + emotion_loss
+                #total_loss = (1- self.config.gamma ) * (spec_loss + post_spec_loss) + (self.config.gamma * emotion_loss)
 
                 total_loss.backward()
                 self.optimizer.step()
@@ -305,9 +309,9 @@ class Solver(object):
                                                                                                                          spec_loss, post_spec_loss,
                                                                                                                          (spec_loss + post_spec_loss)/2,
                                                                                                                          train_ua / (batch_id + 1)))
-                    helper.logger("info", "[CHECK SEED] Print emotion_logits")
-                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[0]))
-                    helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[1]))
+                    #helper.logger("info", "[CHECK SEED] Print emotion_logits")
+                    #helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[0]))
+                    #helper.logger("info", "[CHECK SEED] {}".format(emotion_logits[1]))
 
             # 임시적으로 사용 코드 테스트할 때 분모가 0임을 방지
             if 0 in train_tp_fn:
