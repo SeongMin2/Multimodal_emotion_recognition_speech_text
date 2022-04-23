@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers.optimization import get_cosine_schedule_with_warmup
 from torch.utils.tensorboard import SummaryWriter
+import numpy as np
 import parser_helper as helper
 import time
 import datetime
@@ -127,7 +128,7 @@ class Solver(object):
 
         n_fold = self.config.test_dir.rsplit('/', 2)[1][4]
 
-        #avg_test_loss = []
+        avg_test_loss = []
         with torch.no_grad():
             if loader_type == "train":
                 data_loader = self.train_eval
@@ -154,6 +155,7 @@ class Solver(object):
                     txt_feat = txt_feat.type(torch.cuda.FloatTensor)
 
                 emo_preds = list()
+                tmp_loss = list()
 
                 for spec, wav2vec_feat in zip(spec, wav2vec_feat):
                     spec = spec.to(self.device)
@@ -163,6 +165,8 @@ class Solver(object):
                         wav2vec_feat = wav2vec_feat.to(self.device)
 
                     emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask_ids)
+                    test_loss = self.loss_fn(emo_pred, emotion_lb.to(self.device))
+                    tmp_loss.append(test_loss.item())
 
                     emo_pred = emo_pred.detach().cpu()[0]
                     if len(emo_preds) == 0:
@@ -171,6 +175,8 @@ class Solver(object):
                         emo_preds = [x+y for x,y in zip(emo_pred.tolist(), emo_preds)]
 
                 emotion_lb = emotion_lb.detach().cpu()
+                test_loss = np.average(tmp_loss)
+                avg_test_loss.append(test_loss)
 
                 if(len(emo_preds) > 0):
                     emo_preds = torch.unsqueeze(torch.tensor(emo_preds),0)
@@ -194,12 +200,15 @@ class Solver(object):
             uttr_eval_ua = round(uttr_eval_ua / (batch_id + 1), 4)
             uttr_eval_wa = round(sum([x / y for x, y in zip(uttr_eval_tp, uttr_eval_tp_fn)]) / len(uttr_eval_tp), 4)
 
+            avg_test_loss = np.average(avg_test_loss)
+
             self.writer.add_scalar("UA/Test", uttr_eval_ua, epoch)
             self.writer.add_scalar("WA/Test", uttr_eval_wa, epoch)
             self.writer.add_scalar("Happy_Excitement Acc/Test", uttr_eval_tp[2] / uttr_eval_tp_fn[2], epoch)
             self.writer.add_scalar("Neutral Acc/Test", uttr_eval_tp[1] / uttr_eval_tp_fn[1], epoch)
             self.writer.add_scalar("Angry Acc/Test", uttr_eval_tp[0] / uttr_eval_tp_fn[0], epoch)
             self.writer.add_scalar("Sad Acc/Test", uttr_eval_tp[3] / uttr_eval_tp_fn[3], epoch)
+            self.writer.add_scalar("CLS_Loss/Test",avg_test_loss, epoch)
 
             # print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
             inf = time.time() - inf_start_time
@@ -207,7 +216,7 @@ class Solver(object):
             helper.logger("info", "[TIME] Eval inference time {}".format(inf))
             print("uttr_eval_tp {} uttr_eval_tp_fn {}".format(uttr_eval_tp, uttr_eval_tp_fn))
             helper.logger("results", "[WA] uttr_eval_tp {} uttr_eval_tp_fn {}".format(uttr_eval_tp, uttr_eval_tp_fn))
-            helper.logger("results", "[RESULT] [fold{} {} eval epoch{} UA {} WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
+            helper.logger("results", "[RESULT] [fold{} {} eval epoch{} UA {} WA {} loss {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa, avg_test_loss))
 
             return uttr_eval_ua, uttr_eval_wa
 

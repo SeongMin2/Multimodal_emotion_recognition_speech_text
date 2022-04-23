@@ -88,6 +88,7 @@ class Multimodal(nn.Module):
         self.dropout_t = nn.Dropout(config.dropout_ratio)
 
         self.gamma = torch.nn.parameter.Parameter(torch.FloatTensor([config.gamma]), requires_grad=False)
+        self.delta = torch.nn.parameter.Parameter(torch.FloatTensor([config.delta]), requires_grad=False)
 
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
@@ -169,6 +170,7 @@ class Multimodal(nn.Module):
 
         # downsampling
         codes = []
+        encoder_outputs = encoder_outputs * self.delta
         out_forward = encoder_outputs[:, :, :self.dim_neck]
         out_backward = encoder_outputs[:, :, self.dim_neck:]
 
