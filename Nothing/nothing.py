@@ -14,6 +14,8 @@ import torch
 import pandas as pd
 
 
+delta = torch.nn.parameter.Parameter(torch.FloatTensor([0.2]), requires_grad=True)
+
 a = torch.rand(2,3)
 b = 2 * a
 #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
