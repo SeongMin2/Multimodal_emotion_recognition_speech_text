@@ -147,7 +147,7 @@ class Encoder(torch.nn.Module):
 
         if config.speech_input == "wav2vec":
             input_len = config.dim_wav2vec_emb
-            conv_dim = 512 # 원래
+            conv_dim = 1024 # 원래
         elif config.speech_input == "spec":
             input_len = config.num_mels
 
