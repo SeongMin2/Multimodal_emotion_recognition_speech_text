@@ -157,6 +157,7 @@ class Solver(object):
                 emo_preds = list()
                 tmp_loss = list()
 
+                n_frame = 0
                 for spec, wav2vec_feat in zip(spec, wav2vec_feat):
                     spec = spec.to(self.device)
                     wav2vec_feat = wav2vec_feat.to(self.device)
@@ -165,8 +166,8 @@ class Solver(object):
                         wav2vec_feat = wav2vec_feat.to(self.device)
 
                     emo_pred = self.model(spec, spk_emb, None, None, wav2vec_feat, txt_feat, attn_mask_ids)
-                    test_loss = self.loss_fn(emo_pred, emotion_lb.to(self.device))
-                    tmp_loss.append(test_loss.item())
+                    #test_loss = self.loss_fn(emo_pred, emotion_lb.to(self.device))
+                    #tmp_loss.append(test_loss.item())
 
                     emo_pred = emo_pred.detach().cpu()[0]
                     if len(emo_preds) == 0:
@@ -174,19 +175,22 @@ class Solver(object):
                     else:
                         emo_preds = [x+y for x,y in zip(emo_pred.tolist(), emo_preds)]
 
+                    n_frame += 1
+
                 emotion_lb = emotion_lb.detach().cpu()
-                test_loss = np.average(tmp_loss)
-                avg_test_loss.append(test_loss)
+                #test_loss = np.average(tmp_loss)
+                #avg_test_loss.append(test_loss)
 
                 if(len(emo_preds) > 0):
-                    emo_preds = torch.unsqueeze(torch.tensor(emo_preds),0)
+                    emo_preds = torch.unsqueeze(torch.tensor(np.array(emo_preds)/n_frame), 0)
                     uttr_eval_ua += self.calc_UA(emo_preds, emotion_lb)
 
                     tmp_tp, tmp_tp_fn = self.calc_WA(emo_preds, emotion_lb)
                     uttr_eval_tp = [x + y for x, y in zip(uttr_eval_tp, tmp_tp)]
                     uttr_eval_tp_fn = [x + y for x, y in zip(uttr_eval_tp_fn, tmp_tp_fn)]
 
-                    #emotion_loss = self.loss_fn(emo_preds.to(self.device), emotion_lb.to(self.device))
+                    emotion_loss = self.loss_fn(emo_preds.to(self.device), emotion_lb.to(self.device))
+                    avg_test_loss.append(emotion_loss.item())
 
 
 
@@ -202,13 +206,13 @@ class Solver(object):
 
             avg_test_loss = np.average(avg_test_loss)
 
-            self.writer.add_scalar("UA/Test", uttr_eval_ua, epoch)
-            self.writer.add_scalar("WA/Test", uttr_eval_wa, epoch)
-            self.writer.add_scalar("Happy_Excitement Acc/Test", uttr_eval_tp[2] / uttr_eval_tp_fn[2], epoch)
-            self.writer.add_scalar("Neutral Acc/Test", uttr_eval_tp[1] / uttr_eval_tp_fn[1], epoch)
-            self.writer.add_scalar("Angry Acc/Test", uttr_eval_tp[0] / uttr_eval_tp_fn[0], epoch)
-            self.writer.add_scalar("Sad Acc/Test", uttr_eval_tp[3] / uttr_eval_tp_fn[3], epoch)
-            self.writer.add_scalar("CLS_Loss/Test",avg_test_loss, epoch)
+            self.writer.add_scalar("UA/Test", uttr_eval_ua, epoch+1)
+            self.writer.add_scalar("WA/Test", uttr_eval_wa, epoch+1)
+            self.writer.add_scalar("Happy_Excitement Acc/Test", uttr_eval_tp[2] / uttr_eval_tp_fn[2], epoch+1)
+            self.writer.add_scalar("Neutral Acc/Test", uttr_eval_tp[1] / uttr_eval_tp_fn[1], epoch+1)
+            self.writer.add_scalar("Angry Acc/Test", uttr_eval_tp[0] / uttr_eval_tp_fn[0], epoch+1)
+            self.writer.add_scalar("Sad Acc/Test", uttr_eval_tp[3] / uttr_eval_tp_fn[3], epoch+1)
+            self.writer.add_scalar("CLS_Loss/Test",avg_test_loss, epoch+1)
 
             # print("[fold{} {} eval epoch{} UA {} eval WA {}]".format(n_fold, loader_type, epoch+1, uttr_eval_ua, uttr_eval_wa))
             inf = time.time() - inf_start_time
@@ -332,15 +336,15 @@ class Solver(object):
             train_wa = round(sum([x/y for x,y in zip(train_tp, train_tp_fn)]) / len(train_tp), 4)  # average recall per class # 소수점 4자리까지 출력
 
             # Record results on Tensorboard
-            self.writer.add_scalar("CLS_Loss/Train", emotion_loss, epoch)
-            self.writer.add_scalar("SPEC_Loss/Train", spec_loss, epoch)
-            self.writer.add_scalar("POSTSPEC_Loss/Train", post_spec_loss, epoch)
-            self.writer.add_scalar("UA/Train", train_ua, epoch)
-            self.writer.add_scalar("WA/Train", train_wa, epoch)
-            self.writer.add_scalar("Happy_Excitement Acc/Train", train_tp[2] / train_tp_fn[2], epoch)
-            self.writer.add_scalar("Neutral Acc/Train", train_tp[1] / train_tp_fn[1], epoch)
-            self.writer.add_scalar("Angry Acc/Train", train_tp[0] / train_tp_fn[0], epoch)
-            self.writer.add_scalar("Sad Acc/Train", train_tp[3] / train_tp_fn[3], epoch)
+            self.writer.add_scalar("CLS_Loss/Train", emotion_loss, epoch+1)
+            self.writer.add_scalar("SPEC_Loss/Train", spec_loss, epoch+1)
+            self.writer.add_scalar("POSTSPEC_Loss/Train", post_spec_loss, epoch+1)
+            self.writer.add_scalar("UA/Train", train_ua, epoch+1)
+            self.writer.add_scalar("WA/Train", train_wa, epoch+1)
+            self.writer.add_scalar("Happy_Excitement Acc/Train", train_tp[2] / train_tp_fn[2], epoch+1)
+            self.writer.add_scalar("Neutral Acc/Train", train_tp[1] / train_tp_fn[1], epoch+1)
+            self.writer.add_scalar("Angry Acc/Train", train_tp[0] / train_tp_fn[0], epoch+1)
+            self.writer.add_scalar("Sad Acc/Train", train_tp[3] / train_tp_fn[3], epoch+1)
 
             epc = time.time() - epc_start_time
             epc = str(datetime.timedelta(seconds=epc))[:-7]
