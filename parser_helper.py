@@ -85,7 +85,7 @@ def get_training_config():
     parser.add_argument("--learning_rate", type=float, default=0.00001, help="learning ratio")
     parser.add_argument("--weight_decay", type=float, default = 0.001 , help="weight decay value")
     #parser.add_argument("--warmup_ratio", type=float, default= 0.1, help="warmup_ratio")
-    parser.add_argument("--n_epochs", type=int, default=90)
+    parser.add_argument("--n_epochs", type=int, default=110)
 
     parser.add_argument("--log_interval", type=int, default=15, help="Interval time where model checks probability")
 
