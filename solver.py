@@ -294,7 +294,7 @@ class Solver(object):
 
                 emotion_loss = self.loss_fn(emotion_logits, emotion_lb)
 
-                total_loss = 4 * (spec_loss + post_spec_loss) + emotion_loss
+                total_loss = spec_loss + post_spec_loss + emotion_loss
                 #total_loss = (1- self.config.gamma ) * (spec_loss + post_spec_loss) + (self.config.gamma * emotion_loss)
 
                 total_loss.backward()
