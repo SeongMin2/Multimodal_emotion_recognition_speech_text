@@ -36,7 +36,8 @@ def model_check(model, train_loader):
 
 def set_seed(seed: int):
     #os.environ["PYTHONHASHSEED"] = str(seed)
-
+    #os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    torch.use_deterministic_algorithms(True)
     # 동일한 조건에서 학습 시 weight가 변화하지 않게 하는 옵션
     torch.manual_seed(seed)  # 이놈이 초기 weight 값 들도 모두 고정 시킴
     torch.cuda.manual_seed(seed)
@@ -51,9 +52,10 @@ def set_seed(seed: int):
 
 
 def main():
-    warnings.filterwarnings(action='ignore') # 일단 pretrained 불러서 쓸 때마다 userwarning 나오고 padding="same"관련해서 나오는데 무시하도록..
+    #warnings.filterwarnings(action='ignore') # 일단 pretrained 불러서 쓸 때마다 userwarning 나오고 padding="same"관련해서 나오는데 무시하도록..
     # 근데 pretrained 관련된 warning은 무시 안되네
-    
+
+    #os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     config = helper.get_training_config()
     set_seed(config.seed)
     #train_loader, test_loader = get_train_data_loaders(config, train_npz, test_npz)
