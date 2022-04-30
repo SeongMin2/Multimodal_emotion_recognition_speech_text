@@ -359,11 +359,13 @@ class Solver(object):
             # ['fold', 'epoch', 'data_type','batch','UA','WA']
             eval_records.loc[len(eval_records)] = [n_fold, epoch+1, "test", self.config.batch_size, test_ua, test_wa, str(helper.LOG_PATH.rsplit("/",1)[1])]
 
-            torch.save({"epoch": (epoch + 1),
-                        "model": self.model.state_dict(),
-                        "optimizer_state_dict": self.optimizer.state_dict()},
-                       str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) +"_fold"+str(self.config.train_dir.rsplit('/', 2)[1][4])+ "_neckdim_" + str(
-                           self.config.dim_neck) + ".ckpt")
+            if self.config.model_save:
+                torch.save({"epoch": (epoch + 1),
+                            "model": self.model.state_dict(),
+                            "optimizer_state_dict": self.optimizer.state_dict()},
+                           str(self.config.md_save_dir) + "/checkpoint_step_" + str(epoch + 1) +"_fold"+str(self.config.train_dir.rsplit('/', 2)[1][4])+ "_neckdim_" + str(
+                               self.config.dim_neck) + ".ckpt")
+
             eval_records.to_csv(self.config.rs_save_path, index=False)
 
         tt = time.time() - start_time
