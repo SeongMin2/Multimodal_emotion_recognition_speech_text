@@ -33,7 +33,8 @@ class Solver(object):
         self.train_batch1 = train_batch1
 
         self.config = config
-        self.device = config.device #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device("cuda:"+str(config.n_cuda_device) if torch.cuda.is_available() else 'cpu')
+        #self.device = config.device #torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         self.pretrained_check = get_checkpoint_path(config.pretrained_model)
 

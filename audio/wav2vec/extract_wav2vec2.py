@@ -14,7 +14,8 @@ processor = Wav2Vec2Processor.from_pretrained(MODEL_TYPE) # normalize the data
 model = Wav2Vec2ForCTC.from_pretrained(MODEL_TYPE)
 
 use_cuda = torch.cuda.is_available()
-device = torch.device('cuda:2' if use_cuda else 'cpu')
+device = torch.device("cuda:"+str(config.n_cuda_device) if torch.cuda.is_available() else 'cpu')
+#device = config.device
 print("Device: ", device)
 
 model = model.to(device)

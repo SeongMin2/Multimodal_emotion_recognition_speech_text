@@ -53,7 +53,8 @@ class Multimodal(nn.Module):
     def __init__(self, config):
         super(Multimodal, self).__init__()
 
-        self.device = config.device
+        #self.device = config.device
+        self.device = torch.device("cuda:" + str(config.n_cuda_device) if torch.cuda.is_available() else 'cpu')
 
         self.encoder = get_Encoder(config)
         self.ser_tail = get_SER_Tail(config)

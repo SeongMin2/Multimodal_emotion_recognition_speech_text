@@ -68,7 +68,8 @@ def get_config():
 def get_training_config():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--device", type=str, default=torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')) # before -> cuda:0
+    parser.add_argument("--n_cuda_device", type=int, default=0)
+    #parser.add_argument("--device", type=str, default=torch.device("cuda:0" if torch.cuda.is_available() else 'cpu')) # before -> cuda:0
     parser.add_argument("--seed", type=int, default=1)
 
     parser.add_argument("--data_dir", type=str, default="./full_data", help="Path to data dir")

@@ -11,7 +11,9 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_TYPE)
 text_model = AutoModel.from_pretrained(MODEL_TYPE)
 
 use_cuda = torch.cuda.is_available()
-device = torch.device('cuda:2' if use_cuda else 'cpu')
+device = torch.device("cuda:"+str(config.n_cuda_device) if torch.cuda.is_available() else 'cpu')
+#device = config.device
+#device = torch.device('cuda:2' if use_cuda else 'cpu')
 print("Device: ", device)
 
 text_model = text_model.to(device)
