@@ -101,7 +101,7 @@ def get_train_data_loaders(config, train_npz, test_npz, num_workers=4):
     test_loader = data.DataLoader(dataset=test_dataset,
                                   batch_size=1,
                                   shuffle=False,
-                                  # num_workers=num_workers,
+                                  # num_workers=num_workers,  
                                   drop_last=False,
                                   worker_init_fn=worker_init_fn,
                                   pin_memory=True)
