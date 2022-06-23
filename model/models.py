@@ -431,6 +431,34 @@ class Classifier(nn.Module):
 
         return x
 
+class SingleClassifier(nn.Module):
+    def __init__(self, config):
+        super(SingleClassifier, self).__init__()
 
+        n_classes = config.n_classes
+        input_dim = config.attention_emb
+        '''
+        self.hidden1 = nn.Linear(input_dim, 128)    
+        self.hidden2 = nn.Linear(128, 128) # output_dim을 64로 할까 128로 할까
+        self.hidden3 = nn.Linear(128, n_classes)
+        self.dropout = nn.Dropout(0.5)
+        '''
+        self.hidden1 = nn.Linear(input_dim, 128)
+        self.hidden2 = nn.Linear(128, n_classes)
+        self.dropout = nn.Dropout(0.4)
+
+
+    def forward(self, x):
+        #x = F.relu(self.hidden1(x))
+        #x = self.dropout(F.relu(self.hidden2(x)))
+        #x = self.hidden3(x)
+
+        x = self.dropout(F.relu(self.hidden1(x)))
+        x = self.hidden2(x)
+        #x = F.relu(self.hidden2(x))
+
+        # x = torch.softmax(x, dim=-1) # nn.CrossEntropy()에 이미 softmax로 진행 됨..
+
+        return x
 
 

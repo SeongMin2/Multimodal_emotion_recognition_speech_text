@@ -263,8 +263,8 @@ class SpeechTextDataset(Dataset):
 
         txt_feat, txt_mask_s_idx = self._parse_transcript(txt)
         # text preprocessing
-        txt_feat = txt_feat[1:-1]
-        txt_mask_s_idx -= 1
+        txt_feat = txt_feat[1:-1] # It discard start text token
+        txt_mask_s_idx -= 1 # The reason why this code is reasonable is that end token has to be removed
         # 여러 tokenizer에 따라서 padding 진행하긴하지만 애초에 tokenizer에서 max_length박아서 padding해서 일단 안한다.
 
         txt_feat = torch.from_numpy(txt_feat)
@@ -282,7 +282,7 @@ class SpeechTextDataset(Dataset):
         features["wav2vec_feat"] = wav2vec_feat
         features["text"] = txt
         features['txt_feat'] = txt_feat
-        features['attn_mask_ids'] = np.array([txt_mask_s_idx, spch_mask_s_idx])
+        features['attn_mask_ids'] = np.array([txt_mask_s_idx, spch_mask_s_idx]) # start_idx
         features["emotion_lb"] = emotion_class
 
         # 이 padding 해주는 부분에 대해서 debugging으로 확인하기 위에서는 np.pad하고 ()로 묶어서 return 하던데 

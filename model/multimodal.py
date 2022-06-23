@@ -94,9 +94,9 @@ class Multimodal(nn.Module):
         self.speech_input = config.speech_input
         self.dim_neck = config.dim_neck
         self.freq = config.freq
-        self.len_crop = config.len_crop
-        self.n_heads = config.n_heads
-        self.batch_size = config.batch_size
+        #self.len_crop = config.len_crop
+        #self.n_heads = config.n_heads
+        #self.batch_size = config.batch_size
 
     def make_attn_mask(self, len, mask_start_idx):
         attn_mask = [1 for i in range(len)]
